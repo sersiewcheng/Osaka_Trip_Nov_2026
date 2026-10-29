@@ -1,0 +1,1183 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Osaka Kansai Trip Planner</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@600;800&family=Zen+Kaku+Gothic+New:wght@400;500;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: sticky tab rail of days; each day = illustrated header band, then timeline (left) + sticky route map (right), stacked on phones. */
+:root{
+  --paper:#F3F4F0; --surface:#FFFFFF; --ink:#1C2333; --muted:#5D6575; --line:#D8DBD2;
+  --accent:#AF4228; --accent-ink:#FFFFFF; --accent-soft:#F5E3DB; --gold:#B9842A;
+  --map-bg:#ECEFE8; --map-grid:#DDE1D8; --route:#1C2333;
+  --l-midosuji:#D8141C; --l-sakaisuji:#7A4320; --l-sennichimae:#C93D82; --l-tanimachi:#4F2783;
+  --l-jr:#0068AD; --l-hankyu:#7D1430; --l-kintetsu:#B3122E; --l-hanshin:#B85014; --l-nankai:#C25A12;
+  --l-randen:#55662B; --l-chuo:#0B8A5F; --l-bus:#2B7449; --l-taxi:#454B57; --chip-ink:#FFFFFF;
+  --f-display:'Shippori Mincho','Hiragino Mincho ProN','Yu Mincho',Georgia,serif;
+  --f-body:'Zen Kaku Gothic New','Hiragino Sans','Noto Sans JP',system-ui,sans-serif;
+  --f-mono:'IBM Plex Mono',ui-monospace,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --paper:#10141C; --surface:#19202B; --ink:#E6E8ED; --muted:#9BA3B3; --line:#2A3241;
+  --accent:#E07A52; --accent-ink:#1B0D07; --accent-soft:#3A2219; --gold:#DDAE55;
+  --map-bg:#151B25; --map-grid:#212937; --route:#E6E8ED; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --paper:#10141C; --surface:#19202B; --ink:#E6E8ED; --muted:#9BA3B3; --line:#2A3241;
+  --accent:#E07A52; --accent-ink:#1B0D07; --accent-soft:#3A2219; --gold:#DDAE55;
+  --map-bg:#151B25; --map-grid:#212937; --route:#E6E8ED; color-scheme:dark}
+
+*{box-sizing:border-box}
+body{background:var(--paper);color:var(--ink);font-family:var(--f-body);font-size:15px;line-height:1.55}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--surface)}
+a{color:var(--accent)}
+.wrap{max-width:1180px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:6px}
+
+/* top bar */
+.bar{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--surface);border-bottom:1px solid var(--line)}
+.bar .wrap{display:flex;flex-direction:column;gap:6px;padding-block:10px 0}
+.brand{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
+.brand h1{font-family:var(--f-display);font-weight:800;font-size:1.25rem;margin:0;letter-spacing:.01em}
+.brand span{color:var(--muted);font-size:.82rem}
+.tabs{display:flex;gap:4px;overflow-x:auto;scrollbar-width:none;margin:0 -4px;padding:0 4px 8px}
+.tabs::-webkit-scrollbar{display:none}
+.tab{flex:0 0 auto;border:1px solid var(--line);background:transparent;color:var(--ink);font:inherit;font-size:.84rem;padding:6px 11px;border-radius:999px;cursor:pointer;text-decoration:none;white-space:nowrap}
+.tab small{font-family:var(--f-mono);color:var(--muted);margin-left:4px;font-size:.74rem}
+.tab[aria-current="page"]{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.tab[aria-current="page"] small{color:var(--accent-ink);opacity:.8}
+
+main{padding-block:20px 48px}
+
+/* day header */
+.dayhead{display:grid;grid-template-columns:1fr auto;gap:16px;align-items:end;padding-block:8px 18px;border-bottom:1px solid var(--line);margin-bottom:20px}
+.eyebrow{font-family:var(--f-mono);font-size:.76rem;letter-spacing:.08em;text-transform:uppercase;color:var(--accent)}
+.dayhead h2{font-family:var(--f-display);font-weight:800;font-size:clamp(1.6rem,4.2vw,2.5rem);line-height:1.15;margin:4px 0 8px;text-wrap:balance}
+.lead{max-width:62ch;color:var(--muted);margin:0}
+.meta{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+.pill{font-size:.8rem;padding:3px 10px;border-radius:999px;background:var(--accent-soft);color:var(--ink)}
+.pill.money{font-family:var(--f-mono)}
+.motif{width:150px;height:110px;color:var(--ink)}
+@media (max-width:620px){.dayhead{grid-template-columns:1fr}.motif{order:-1;width:110px;height:80px}}
+
+/* grid */
+.daygrid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,440px);gap:28px;align-items:start}
+.mapcol{position:sticky;top:110px}
+@media (max-width:900px){.daygrid{grid-template-columns:minmax(0,1fr)}.mapcol{position:static;order:-1}}
+
+/* map */
+.mapcard{background:var(--surface);border:1px solid var(--line);border-radius:14px;overflow:hidden}
+.mapcard svg{display:block;width:100%;height:auto}
+.mapfoot{display:flex;flex-wrap:wrap;gap:6px 14px;padding:10px 14px;border-top:1px solid var(--line);font-size:.78rem;color:var(--muted)}
+.mapfoot .k{display:inline-flex;align-items:center;gap:6px}
+.mapnote{padding:0 14px 12px;font-size:.78rem;color:var(--muted);margin:0}
+.pin{cursor:pointer}
+.pin circle,.pin rect{fill:var(--surface);stroke:var(--accent);stroke-width:2.5}
+.pin text.n{fill:var(--accent);font:600 12px var(--f-mono);text-anchor:middle;dominant-baseline:central}
+.pin text.lbl{fill:var(--ink);font:500 12px var(--f-body);paint-order:stroke;stroke:var(--map-bg);stroke-width:4px;stroke-linejoin:round;opacity:0;transition:opacity .15s}
+.pin.active circle,.pin:hover circle,.pin:focus circle{fill:var(--accent)}
+.pin.active text.n,.pin:hover text.n,.pin:focus text.n{fill:var(--accent-ink)}
+.pin.active text.lbl,.pin:hover text.lbl,.pin:focus text.lbl{opacity:1}
+.pin.home rect{stroke:var(--ink)} .pin.home text.n{fill:var(--ink)}
+
+/* timeline */
+.timeline{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:0}
+.stop{display:grid;grid-template-columns:62px minmax(0,1fr);gap:14px;position:relative}
+.stop .when{font-family:var(--f-mono);font-size:.86rem;font-variant-numeric:tabular-nums;padding-top:14px;color:var(--muted);text-align:right}
+.leg{grid-column:2;display:flex;gap:8px;align-items:flex-start;padding:10px 0 10px 18px;margin-left:13px;border-left:2px dashed var(--line);font-size:.86rem;color:var(--muted)}
+.leg.train{border-left-style:solid}
+.leg .how{min-width:0}
+.leg .chips{display:flex;gap:4px;flex-wrap:wrap;margin-bottom:3px}
+.chip{display:inline-block;font:500 .7rem var(--f-mono);letter-spacing:.03em;padding:2px 7px;border-radius:4px;color:var(--chip-ink)}
+.chip.walk{background:transparent;color:var(--muted);border:1px solid var(--line)}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:12px 14px;display:flex;gap:12px;min-width:0;transition:border-color .15s,box-shadow .15s}
+.card.active{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}
+.num{flex:0 0 28px;height:28px;border-radius:50%;border:2px solid var(--accent);color:var(--accent);display:grid;place-items:center;font:600 .78rem var(--f-mono);background:var(--surface)}
+.num.off{border-style:dashed;border-color:var(--muted);color:var(--muted)}
+.body{min-width:0;flex:1}
+.ttl{display:flex;justify-content:space-between;gap:10px;align-items:baseline}
+.ttl h3{margin:0;font-size:1.02rem;font-weight:700;line-height:1.35}
+.cost{font-family:var(--f-mono);font-size:.82rem;white-space:nowrap;color:var(--ink)}
+.cat{display:inline-flex;align-items:center;gap:5px;font-size:.72rem;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin-top:2px}
+.cat svg{width:14px;height:14px}
+.desc{margin:6px 0 0;font-size:.9rem}
+.sub{margin:6px 0 0;font-size:.86rem;color:var(--muted)}
+.sub b{color:var(--ink);font-weight:500}
+.sub.alt{background:var(--accent-soft);padding:7px 10px;border-radius:8px;color:var(--ink)}
+.addr{font-family:var(--f-mono);font-size:.76rem;color:var(--muted);margin-top:6px}
+.actions{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px}
+.btn{display:inline-flex;align-items:center;gap:6px;font:500 .8rem var(--f-body);padding:6px 11px;border-radius:8px;border:1px solid var(--line);background:transparent;color:var(--ink);text-decoration:none;cursor:pointer}
+.btn:hover{border-color:var(--accent);color:var(--accent)}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.btn.primary:hover{filter:brightness(1.07);color:var(--accent-ink)}
+.btn svg{width:14px;height:14px}
+
+/* tips / boxes */
+.box{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:14px 16px;margin-top:20px}
+.box h4{margin:0 0 6px;font-family:var(--f-display);font-size:1.05rem}
+.box ul{margin:0;padding-left:18px}
+.box li+li{margin-top:4px}
+.box.warn{border-color:var(--gold)}
+
+/* overview */
+.intro{display:grid;grid-template-columns:minmax(0,1.4fr) minmax(0,1fr);gap:28px;align-items:start;margin-bottom:28px}
+@media (max-width:820px){.intro{grid-template-columns:minmax(0,1fr)}}
+.intro h2{font-family:var(--f-display);font-weight:800;font-size:clamp(1.8rem,5vw,2.8rem);line-height:1.12;margin:4px 0 10px;text-wrap:balance}
+.facts{display:grid;gap:10px;font-size:.9rem}
+.facts div{display:grid;grid-template-columns:92px minmax(0,1fr);gap:10px;padding-bottom:10px;border-bottom:1px solid var(--line)}
+.facts dt{font-family:var(--f-mono);font-size:.74rem;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);padding-top:2px}
+.facts dd{margin:0}
+.daycards{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:12px}
+.dc{display:grid;grid-template-columns:64px minmax(0,1fr);gap:12px;align-items:center;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:12px;text-decoration:none;color:var(--ink)}
+.dc:hover{border-color:var(--accent)}
+.dc svg{width:64px;height:48px}
+.dc .d{font-family:var(--f-mono);font-size:.72rem;color:var(--accent);letter-spacing:.05em;text-transform:uppercase}
+.dc .t{font-weight:700;line-height:1.3;margin:2px 0}
+.dc .w{font-size:.78rem;color:var(--muted)}
+.sec{margin-top:34px}
+.sec>h3{font-family:var(--f-display);font-size:1.35rem;margin:0 0 12px}
+.cols{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:12px}
+.cols .box{margin-top:0}
+.check{list-style:none;padding:0;margin:0}
+.check li{display:flex;gap:10px;align-items:flex-start;padding:6px 0}
+.check input{margin-top:4px;accent-color:var(--accent);width:16px;height:16px;flex:0 0 auto}
+.legend{display:flex;flex-wrap:wrap;gap:6px}
+
+/* directory */
+.dirtools{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:4px 0 16px}
+.dirtools input[type=search]{flex:1 1 220px;min-width:0;font:inherit;padding:9px 12px;border-radius:10px;border:1px solid var(--line);background:var(--surface);color:var(--ink)}
+.filt{border:1px solid var(--line);background:transparent;color:var(--ink);font:inherit;font-size:.8rem;padding:6px 10px;border-radius:999px;cursor:pointer}
+.filt[aria-pressed="true"]{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+.dirlist{display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:10px}
+.dir{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:12px 14px;display:flex;flex-direction:column;gap:4px;min-width:0}
+.dir h4{margin:0;font-size:.98rem}
+.dir .dd{font-family:var(--f-mono);font-size:.74rem;color:var(--accent)}
+.dir p{margin:0;font-size:.86rem;color:var(--muted)}
+.dir .actions{margin-top:auto;padding-top:8px}
+.count{font-size:.82rem;color:var(--muted)}
+.foot{margin-top:40px;font-size:.78rem;color:var(--muted);border-top:1px solid var(--line);padding-top:14px}
+/* done ticks */
+.donebtn{margin-left:auto;display:inline-flex;align-items:center;gap:6px;font:500 .78rem var(--f-body);padding:6px 10px;border-radius:8px;border:1px dashed var(--line);background:transparent;color:var(--muted);cursor:pointer}
+.donebtn[aria-pressed="true"]{border-style:solid;border-color:var(--l-bus);color:var(--l-bus)}
+.card.done{opacity:.62}
+.card.done h3{text-decoration:line-through;text-decoration-thickness:1px}
+.progress{height:6px;border-radius:99px;background:var(--line);overflow:hidden;margin-top:12px;max-width:340px}
+.progress i{display:block;height:100%;background:var(--l-bus);width:0;transition:width .3s}
+.progtxt{font-size:.78rem;color:var(--muted);margin-top:4px}
+
+/* USJ planner */
+.ulayout{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,380px);gap:24px;align-items:start}
+.planbox{position:sticky;top:110px}
+@media (max-width:900px){.ulayout{grid-template-columns:minmax(0,1fr)}.planbox{position:static}}
+.you{display:flex;flex-wrap:wrap;gap:10px 18px;align-items:center;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:12px 14px;margin-bottom:12px}
+.you label{font-size:.86rem;display:inline-flex;align-items:center;gap:8px}
+.you input[type=number]{width:84px;font:inherit;padding:6px 8px;border-radius:8px;border:1px solid var(--line);background:var(--paper);color:var(--ink)}
+.you input[type=checkbox]{accent-color:var(--accent);width:16px;height:16px}
+.chiprow{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px}
+.rides{display:grid;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));gap:10px;margin-top:8px}
+.ride{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:12px 14px;display:flex;flex-direction:column;gap:6px;min-width:0}
+.ride.no{opacity:.5}
+.ride.inplan{border-color:var(--accent)}
+.ride h4{margin:0;font-size:.98rem;line-height:1.3}
+.rmeta{display:flex;flex-wrap:wrap;gap:4px}
+.tag{font:500 .7rem var(--f-mono);padding:2px 7px;border-radius:4px;background:var(--paper);color:var(--muted);border:1px solid var(--line)}
+.tag.gentle{color:var(--l-bus);border-color:var(--l-bus)}
+.tag.moderate{color:var(--gold);border-color:var(--gold)}
+.tag.thrill{color:var(--accent);border-color:var(--accent)}
+.elig{font-size:.8rem;font-weight:500;padding:4px 8px;border-radius:6px;background:var(--paper)}
+.elig.ok{color:var(--l-bus)} .elig.comp{color:var(--gold)} .elig.bad{color:var(--accent)}
+.ride p{margin:0;font-size:.85rem;color:var(--muted)}
+.waits{display:grid;grid-template-columns:auto 1fr auto;gap:3px 8px;align-items:center;font:400 .72rem var(--f-mono);color:var(--muted)}
+.waits .wbar{height:6px;border-radius:99px;background:var(--line);overflow:hidden}
+.waits .wbar i{display:block;height:100%;background:var(--accent);opacity:.75}
+.ride .actions{margin-top:auto;padding-top:4px}
+.plan{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:14px}
+.plan h3{margin:0 0 4px;font-family:var(--f-display);font-size:1.2rem}
+.plan .row{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin:8px 0}
+.plan select{font:inherit;padding:6px 8px;border-radius:8px;border:1px solid var(--line);background:var(--paper);color:var(--ink)}
+.pl{list-style:none;margin:8px 0 0;padding:0;display:flex;flex-direction:column;gap:6px}
+.pl li{display:grid;grid-template-columns:52px minmax(0,1fr) auto;gap:8px;align-items:center;padding:8px;border-radius:10px;background:var(--paper)}
+.pl .tm{font:500 .8rem var(--f-mono);font-variant-numeric:tabular-nums}
+.pl .nm{font-size:.86rem;line-height:1.3}
+.pl .nm small{display:block;color:var(--muted);font-size:.74rem}
+.pl .ctl{display:flex;gap:2px}
+.ib{width:28px;height:28px;border-radius:7px;border:1px solid var(--line);background:var(--surface);color:var(--ink);cursor:pointer;font:500 .85rem var(--f-mono)}
+.ib:hover{border-color:var(--accent);color:var(--accent)}
+.sum{margin-top:10px;font-size:.84rem;color:var(--muted)}
+.sum b{color:var(--ink)}
+.empty{font-size:.86rem;color:var(--muted);padding:10px 0}
+.note{font-size:.78rem;color:var(--muted);margin:8px 0 0}
+/* group vote */
+.voters{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:12px 14px;margin-bottom:12px}
+.voters h3{margin:0 0 2px;font-family:var(--f-display);font-size:1.15rem}
+.vlist{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+.vchip{display:flex;align-items:center;gap:8px;border:1px solid var(--line);background:var(--paper);color:var(--ink);font:inherit;font-size:.9rem;padding:6px 12px 6px 6px;border-radius:999px;cursor:pointer}
+.vchip .av{width:28px;height:28px;border-radius:50%;display:grid;place-items:center;font:700 .8rem var(--f-body);color:#fff}
+.vchip small{font-family:var(--f-mono);color:var(--muted);font-size:.72rem}
+.vchip[aria-pressed="true"]{border-color:var(--ink);box-shadow:0 0 0 2px var(--ink)}
+.vote{display:grid;grid-template-columns:repeat(3,1fr);gap:4px}
+.vote button{font:500 .78rem var(--f-body);padding:7px 4px;border-radius:8px;border:1px solid var(--line);background:var(--paper);color:var(--ink);cursor:pointer}
+.vote button[aria-pressed="true"][data-v="2"]{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.vote button[aria-pressed="true"][data-v="1"]{background:var(--gold);border-color:var(--gold);color:var(--accent-ink)}
+.vote button[aria-pressed="true"][data-v="0"]{background:var(--muted);border-color:var(--muted);color:var(--paper)}
+.vlabel{font-size:.74rem;color:var(--muted)}
+.dots{display:flex;gap:4px;align-items:center}
+.dot{width:26px;height:22px;border-radius:50%;display:grid;place-items:center;font:700 .66rem var(--f-body);border:1.5px dashed var(--line);color:var(--muted)}
+.dot.v2{background:var(--accent);border:0;color:var(--accent-ink)}
+.dot.v1{background:var(--gold);border:0;color:var(--accent-ink)}
+.dot.v0{background:transparent;border:1.5px solid var(--muted);color:var(--muted);text-decoration:line-through}
+.res{list-style:none;margin:8px 0 0;padding:0;display:flex;flex-direction:column;gap:6px}
+.res li{display:grid;grid-template-columns:22px minmax(0,1fr) auto;gap:8px;align-items:center;padding:7px 8px;border-radius:10px;background:var(--paper)}
+.res .rk{font:600 .78rem var(--f-mono);color:var(--muted)}
+.res .rn{font-size:.85rem;line-height:1.3}
+.res .rn small{display:block;font-size:.72rem;color:var(--muted)}
+.badge{font:600 .66rem var(--f-mono);letter-spacing:.04em;padding:1px 6px;border-radius:4px;margin-left:4px}
+.badge.all{background:var(--l-bus);color:#fff}
+.badge.split{border:1px solid var(--gold);color:var(--gold)}
+.codebox{width:100%;min-height:70px;font:400 .78rem var(--f-mono);padding:8px;border-radius:8px;border:1px solid var(--line);background:var(--paper);color:var(--ink);resize:vertical}
+details.share{margin-top:10px;font-size:.84rem}
+details.share summary{cursor:pointer;color:var(--accent);font-weight:500}
+
+/* tools */
+.tools{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:14px;align-items:start}
+.conv{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.conv label{font-size:.78rem;color:var(--muted);display:flex;flex-direction:column;gap:4px}
+.conv input{font:500 1.1rem var(--f-mono);padding:8px 10px;border-radius:8px;border:1px solid var(--line);background:var(--paper);color:var(--ink);min-width:0;width:100%}
+.phr{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px}
+.box .phr,.box .shoplist{padding-left:0}
+.box .phr li+li,.box .shoplist li+li{margin-top:0}
+.phr li{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:6px 10px;align-items:center;padding:8px 10px;border-radius:10px;background:var(--paper)}
+.phr .jp{font-size:1.02rem;font-weight:700}
+.phr .ro{font-size:.78rem;color:var(--muted)}
+.phr .en{font-size:.82rem}
+.phr .b{display:flex;gap:4px;grid-row:span 3}
+.shop{display:flex;gap:6px;margin:8px 0}
+.shop input{flex:1;min-width:0;font:inherit;padding:8px 10px;border-radius:8px;border:1px solid var(--line);background:var(--paper);color:var(--ink)}
+.shoplist{list-style:none;margin:0;padding:0}
+.shoplist li{display:flex;gap:8px;align-items:center;padding:6px 0;border-bottom:1px solid var(--line)}
+.shoplist li span{flex:1;min-width:0}
+.shoplist li.got span{text-decoration:line-through;color:var(--muted)}
+.big{position:fixed;inset:0;z-index:20;background:var(--surface);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;text-align:center;padding:max(24px,env(safe-area-inset-top,0px)) max(20px,env(safe-area-inset-right,0px)) max(24px,env(safe-area-inset-bottom,0px)) max(20px,env(safe-area-inset-left,0px))}
+.big .jp{font-family:var(--f-display);font-weight:800;font-size:clamp(2rem,9vw,4.4rem);line-height:1.25;max-width:20ch}
+.big .en{color:var(--muted);font-size:1rem}
+.toast{position:fixed;left:50%;bottom:max(20px,env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--paper);padding:8px 14px;border-radius:999px;font-size:.84rem;z-index:30}
+
+.wx{display:grid;grid-template-columns:36px minmax(0,1fr) auto;gap:10px;align-items:center;margin-top:14px;padding:10px 12px;border-radius:12px;background:var(--surface);border:1px solid var(--line);max-width:640px}
+.wxi svg{width:36px;height:36px;display:block}
+.wxt b{display:block;font-size:.95rem}
+.wxt small{display:block;font-size:.74rem;color:var(--muted)}
+.wxtip{display:block;font-size:.84rem;margin-top:4px}
+@media (max-width:520px){.wx{grid-template-columns:32px minmax(0,1fr)}.wx .btn{grid-column:1/-1;justify-self:start}}
+.wmini{display:flex;align-items:center;gap:5px;font-size:.74rem;color:var(--muted);margin-top:3px}
+.wmini svg{width:16px;height:16px}
+.banner{position:relative;border-radius:16px;overflow:hidden;margin:4px 0 18px;aspect-ratio:10/3;max-width:100%;background:var(--map-bg)}
+.banner svg{display:block;width:100%;height:100%}
+.bday{position:absolute;left:14px;bottom:12px;font:600 .78rem var(--f-mono);letter-spacing:.06em;text-transform:uppercase;color:#fff;background:rgba(15,20,36,.55);padding:4px 10px;border-radius:999px}
+@media (max-width:620px){.banner{aspect-ratio:16/7}}
+.wear .wl{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:8px;margin:8px 0}
+.wear .wl div{background:var(--paper);border-radius:10px;padding:8px 10px}
+.wear dt{font:500 .7rem var(--f-mono);letter-spacing:.06em;text-transform:uppercase;color:var(--accent)}
+.wear dd{margin:2px 0 0;font-size:.88rem}
+.wtable{display:flex;flex-direction:column;gap:6px}
+.wrow{display:grid;grid-template-columns:130px 28px 92px minmax(0,1fr);gap:10px;align-items:center;padding:10px 12px;border-radius:10px;background:var(--surface);border:1px solid var(--line);color:var(--ink);text-decoration:none;font-size:.88rem}
+.wrow:hover{border-color:var(--accent)}
+.wrow .wi svg{width:26px;height:26px;display:block}
+.wrow .wt{font-family:var(--f-mono);font-variant-numeric:tabular-nums;white-space:nowrap}
+.wrow .ww{color:var(--muted)}
+@media (max-width:520px){.wrow{grid-template-columns:84px 24px 80px minmax(0,1fr);font-size:.8rem}}
+.herowrap{position:relative;margin:4px 0 12px}
+.herowrap .banner{margin:0}
+.herotext{position:absolute;inset:auto 0 0 0;padding:40px 18px 14px;background:linear-gradient(transparent,rgba(10,14,26,.78));border-radius:0 0 16px 16px;color:#fff}
+.herotext .eyebrow{color:#FFD98A}
+.herotext h2{font-family:var(--f-display);font-weight:800;font-size:clamp(1.3rem,4.5vw,2.3rem);line-height:1.15;margin:2px 0 0;text-wrap:balance}
+.lead1{font-size:1rem;margin:0 0 12px;max-width:62ch}
+.tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px;margin:0 0 12px}
+.tile{display:flex;align-items:center;gap:10px;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:10px 12px;color:var(--ink);text-decoration:none;min-width:0}
+.tile b{display:block;font-size:.95rem;line-height:1.2}
+.tile small{display:block;font-size:.74rem;color:var(--muted)}
+.ti{flex:0 0 34px;height:34px;display:grid;place-items:center}
+.ti svg{width:32px;height:32px}
+.ti.lg{font-size:1.4rem;font-weight:700;color:var(--accent)}
+.wxtile b{white-space:nowrap}
+.wxtile .mini{margin-left:auto;font-size:.76rem;font-weight:600;color:var(--accent);text-decoration:none;border:1px solid var(--line);border-radius:999px;padding:3px 9px}
+.cico{flex:0 0 40px;height:40px;border-radius:12px;background:var(--cc);color:#fff;display:grid;place-items:center;position:relative}
+.cico svg{width:20px;height:20px;stroke:#fff}
+.cico b{position:absolute;right:-6px;top:-6px;width:20px;height:20px;border-radius:50%;background:var(--surface);color:var(--ink);border:1.5px solid var(--cc);font:600 .66rem var(--f-mono);display:grid;place-items:center}
+.flags{display:flex;flex-wrap:wrap;gap:4px;margin-top:5px}
+.flag{font:500 .68rem var(--f-mono);letter-spacing:.03em;padding:2px 7px;border-radius:999px;background:var(--accent-soft);color:var(--ink)}
+.flag.rem{background:var(--gold);color:var(--accent-ink)}
+details.more{margin-top:6px}
+details.more summary{cursor:pointer;font-size:.8rem;font-weight:600;color:var(--accent);list-style:none}
+details.more summary::-webkit-details-marker{display:none}
+details.more summary::before{content:"+ "}
+details.more[open] summary::before{content:"– "}
+details.more p,details.more li{font-size:.86rem;color:var(--muted);margin:6px 0 0}
+details.more.box summary{font-size:.95rem;color:var(--ink)}
+.btn.icon{padding:6px 9px}
+.leg .how{font-size:.8rem}
+.outfit{display:grid;grid-template-columns:repeat(auto-fill,minmax(88px,1fr));gap:8px;margin-top:6px}
+.oi{display:flex;flex-direction:column;align-items:center;text-align:center;gap:4px;background:var(--paper);border-radius:12px;padding:10px 6px}
+.oi span svg{width:40px;height:40px;display:block}
+.oi small{font-size:.76rem;line-height:1.25}
+.oi b{font-size:.82rem}
+.outfit.layers{grid-template-columns:repeat(auto-fit,minmax(120px,1fr))}
+.wgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px}
+.wcell{display:flex;flex-direction:column;align-items:center;gap:4px;padding:12px 8px;border-radius:12px;background:var(--surface);border:1px solid var(--line);color:var(--ink);text-decoration:none;text-align:center}
+.wcell:hover{border-color:var(--accent)}
+.wcell .wd{font-weight:700;font-size:.86rem}
+.wcell .wd small{display:block;font-weight:400;color:var(--muted);font-size:.72rem}
+.wcell .wi svg{width:34px;height:34px}
+.wcell b{font-family:var(--f-mono);font-size:.86rem}
+.wcell .wic{display:flex;gap:2px}
+.wcell .wic svg{width:24px;height:24px}
+.packgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:6px}
+.pk{display:flex;gap:8px;align-items:center;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:9px 10px;font-size:.86rem;cursor:pointer}
+.pk input{accent-color:var(--accent);width:18px;height:18px;flex:0 0 auto}
+.pk:has(input:checked) span{text-decoration:line-through;color:var(--muted)}
+.intro1 h2{font-family:var(--f-display);font-weight:800;font-size:clamp(1.5rem,5vw,2.4rem);margin:0 0 4px}
+.dc2{display:block;background:var(--surface);border:1px solid var(--line);border-radius:14px;overflow:hidden;color:var(--ink);text-decoration:none}
+.dc2:hover{border-color:var(--accent)}
+.dc2 .banner{margin:0;border-radius:0;aspect-ratio:16/7}
+.dct{padding:10px 12px}
+.dct .d{font-family:var(--f-mono);font-size:.72rem;color:var(--accent);letter-spacing:.05em;text-transform:uppercase}
+.dct .t{font-weight:700;line-height:1.3;margin:2px 0}
+/* USJ teen UI */
+.uhero{padding-block:4px 14px}
+.uhero h2{font-family:var(--f-display);font-weight:800;font-size:clamp(1.6rem,6vw,2.4rem);margin:4px 0 10px;line-height:1.15}
+.steps{list-style:none;margin:0;padding:0;display:flex;flex-wrap:wrap;gap:8px}
+.steps li{display:flex;align-items:center;gap:8px;font-size:.9rem;background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:5px 12px 5px 5px}
+.steps b{width:22px;height:22px;border-radius:50%;background:var(--accent);color:var(--accent-ink);display:grid;place-items:center;font-size:.75rem}
+.seg{display:grid;grid-template-columns:repeat(4,1fr);gap:4px;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:4px;margin:6px 0 16px;max-width:560px}
+.seg button{font:600 .95rem var(--f-body);padding:11px 4px;border:0;border-radius:10px;background:transparent;color:var(--muted);cursor:pointer}
+.seg button[aria-selected="true"]{background:var(--ink);color:var(--paper)}
+.names{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
+@media (max-width:620px){.names{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.name{display:flex;align-items:center;gap:10px;padding:12px;border-radius:14px;border:2px solid var(--line);background:var(--surface);color:var(--ink);font:700 1.05rem var(--f-body);cursor:pointer;text-align:left;min-width:0}
+.name small{display:block;font:400 .74rem var(--f-mono);color:var(--muted)}
+.name .av,.vp .av{width:38px;height:38px;flex:0 0 auto;border-radius:50%;background:var(--c);color:#fff;display:grid;place-items:center;font-weight:800}
+.name[aria-pressed="true"]{border-color:var(--c);box-shadow:0 0 0 3px var(--c)}
+.pick{font-weight:600;color:var(--accent);margin:14px 0 6px}
+.mybar{display:flex;flex-direction:column;gap:6px;margin:14px 0 4px;font-size:.92rem}
+.mybar .progress{margin:0;max-width:none}
+.vrides{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:12px;margin-top:12px}
+.vr{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:14px;display:flex;flex-direction:column;gap:8px;min-width:0}
+.vr.voted{border-color:var(--ink)}
+.vtop{display:flex;justify-content:space-between;gap:8px;align-items:flex-start}
+.vtop h4{margin:0;font-size:1.02rem;line-height:1.3}
+.vr p{margin:0;font-size:.88rem;color:var(--muted)}
+.vmeta{font:500 .76rem var(--f-mono);color:var(--muted)}
+.vr .vote button{min-height:46px;font-size:.92rem;font-weight:600}
+.vr .vote button:disabled{opacity:.45;cursor:not-allowed}
+.donebox{margin-top:16px;padding:14px;border-radius:14px;background:var(--accent-soft);display:flex;gap:12px;align-items:center;flex-wrap:wrap;font-weight:600}
+.whovoted{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:6px}
+.vp{display:inline-flex;align-items:center;gap:8px;font-size:.88rem;background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:4px 12px 4px 4px}
+.vp .av{width:28px;height:28px;font-size:.8rem}
+.res.tall li{padding:10px}
+.res.tall .rn{font-size:.95rem;font-weight:600}
+/* USJ park map */
+.umap{background:var(--surface);border:1px solid var(--line);border-radius:14px;overflow:hidden}
+.umap svg{display:block;width:100%;height:auto;touch-action:manipulation}
+.umap .area{stroke-width:1.5}
+.umap .alab{font:700 15px var(--f-body);fill:var(--ink);text-anchor:middle;paint-order:stroke;stroke:var(--map-bg);stroke-width:4px;stroke-linejoin:round}
+.umap .alab.dim{fill:var(--muted);font-weight:500}
+.upin{cursor:pointer}
+.upin circle{fill:var(--surface);stroke-width:3}
+.upin text.n{font:700 12px var(--f-mono);text-anchor:middle;dominant-baseline:central;fill:var(--accent-ink)}
+.upin.inplan circle{fill:var(--accent);stroke:var(--accent)}
+.upin.all circle{stroke:var(--l-bus)} .upin.yes circle{stroke:var(--gold)} .upin.none circle{stroke:var(--muted);stroke-dasharray:3 3}
+.upin text.lbl{font:600 15px var(--f-body);fill:var(--ink);paint-order:stroke;stroke:var(--map-bg);stroke-width:5px;stroke-linejoin:round;opacity:0}
+.upin.sel circle{stroke:var(--ink);stroke-width:4} .upin.sel text.lbl,.upin:hover text.lbl,.upin:focus text.lbl{opacity:1}
+.ukey{display:flex;flex-wrap:wrap;gap:6px 14px;padding:10px 14px;border-top:1px solid var(--line);font-size:.78rem;color:var(--muted)}
+.ukey span{display:inline-flex;align-items:center;gap:6px}
+.ukey i{width:14px;height:14px;border-radius:50%;border:3px solid;display:inline-block;background:var(--surface)}
+.ulay{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(0,1fr);gap:16px;align-items:start}
+@media (max-width:860px){.ulay{grid-template-columns:minmax(0,1fr)}}
+.udet{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:14px;display:flex;flex-direction:column;gap:8px}
+.udet h4{margin:0;font-size:1.08rem;line-height:1.3}
+.udet p{margin:0;font-size:.88rem;color:var(--muted)}
+.route{display:flex;flex-wrap:wrap;gap:6px;margin:0;padding:0;list-style:none}
+.route button{display:inline-flex;align-items:center;gap:6px;font:500 .8rem var(--f-body);padding:4px 10px 4px 4px;border-radius:999px;border:1px solid var(--line);background:var(--paper);color:var(--ink);cursor:pointer}
+.route b{width:20px;height:20px;border-radius:50%;background:var(--accent);color:var(--accent-ink);display:grid;place-items:center;font:700 .7rem var(--f-mono)}
+.alist{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:10px;margin-top:14px}
+.alist .box{margin-top:0;padding:12px 14px}
+.alist h4{font-size:.98rem;display:flex;align-items:center;gap:8px}
+.alist h4 i{width:12px;height:12px;border-radius:3px;display:inline-block}
+.alist ul{list-style:none;padding:0;margin:0}
+.alist li button{all:unset;cursor:pointer;display:flex;gap:6px;align-items:center;font-size:.86rem;padding:3px 0}
+.alist li button:hover{color:var(--accent)}
+.alist li button:focus-visible{outline:2px solid var(--accent);border-radius:4px}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;scroll-behavior:auto!important}}
+</style>
+
+<header class="bar">
+  <div class="wrap">
+    <div class="brand"><h1>Osaka &amp; Kansai</h1><span>3–11 Nov 2026 · three families · base: Nippombashi</span></div>
+    <nav class="tabs" id="tabs" aria-label="Trip sections"></nav>
+  </div>
+</header>
+<main class="wrap" id="view" tabindex="-1"></main>
+
+<script>
+const ROOMS=[['201','Junne and family'],['202','Jaslyn and family'],['203','Dee and family']];
+const HOME={n:'Airbnb (Rooms 201–203)',addr:'2-11-2 Nippombashi, Chuo-ku, Osaka-shi, Osaka-fu 542-0073, Japan',q:'2-11-2 Nippombashi, Chuo-ku, Osaka-shi, Osaka-fu 542-0073, Japan',ll:[34.6648,135.5072]};
+/* WEATHER: outlook snapshot (refreshed by Claude; not live data). k = sun | part | cloud | rain */
+const WX={updated:'29 Oct 2026',src:'Ventusky model outlook',
+ days:{
+  1:{k:'sun',c:'Clear, a few clouds',t:'~20°C',city:'osaka'},
+  2:{k:'rain',c:'Overcast, light rain',t:'~17°C',city:'osaka',tip:'Kuromon, Den Den Town and Shinsekai are mostly covered arcades, so light rain barely matters. Pack a compact umbrella.'},
+  3:{k:'rain',c:'Mixed, rain showers',t:'~18°C',city:'osaka',tip:'Showers at USJ: most queues are covered and rides keep running in light rain. Bring a poncho (cheaper from Daiso than in the park) and a plastic bag for phones.'},
+  4:{k:'rain',c:'Mixed, rain showers',t:'~21°C',city:'osaka',tip:'Shinsaibashi-suji is fully covered; for Amemura and Orange Street, duck into shops when showers pass.'},
+  5:{k:'rain',c:'Mixed, rain showers',city:'osaka',tip:'If it pours, do the castle museum indoors and keep Umeda Sky for later in the evening when showers often clear.'},
+  6:{k:'cloud',c:'Mostly cloudy',city:'nara'},
+  7:{k:'rain',c:'Mixed, rain showers',city:'kyoto',tip:'Bamboo Grove is still beautiful in drizzle and quieter. Nishiki Market and Teramachi arcades are covered.'},
+  8:{k:'part',c:'Partly cloudy',city:'minoo',tip:'The Minoo falls path can be slippery after rain; wear shoes with grip.'},
+  9:{k:'sun',c:'Clear, a few clouds',city:'osaka'}
+ },
+ normal:'Typical early November in Osaka: about 19°C by day, 12°C at night; Kyoto, Nara and Minoo run 1–3°C cooler.'};
+const LINES={
+  midosuji:['Midosuji','--l-midosuji'],sakaisuji:['Sakaisuji','--l-sakaisuji'],sennichimae:['Sennichimae','--l-sennichimae'],
+  tanimachi:['Tanimachi','--l-tanimachi'],jr:['JR','--l-jr'],hankyu:['Hankyu','--l-hankyu'],kintetsu:['Kintetsu','--l-kintetsu'],
+  hanshin:['Hanshin','--l-hanshin'],chuo:['Chuo','--l-chuo'],nankai:['Nankai','--l-nankai'],randen:['Randen tram','--l-randen'],bus:['Hankyu Bus','--l-bus'],taxi:['Taxi','--l-taxi']
+};
+const CATS={sight:'Sight',food:'Food',cafe:'Café',shop:'Shopping',fun:'Fun',transit:'Transport',home:'Home base'};
+
+/* m = how you reach this stop: walk | train | bus | taxi | none ; ll:null or map:false = shown in list but off the map */
+const DAYS=[
+{id:1,date:'Tue 3 Nov',title:'Arrival & Dotonbori lights',motif:'arrival',who:'All 11 here',total:'≈ ¥2,800 + transfer',hours:'06:25 → 21:30',
+ lead:'Meet at Changi Terminal 2 at 06:25, fly SQ 620 at 08:25, land at KIX at 15:30. Settle in, then ease into Osaka with an evening walk through Dotonbori. A booked airport transfer takes everyone from KIX to the Airbnb door; the evening is all on foot. 3 Nov is Culture Day, a public holiday, so the streets will be lively.',
+ stops:[
+  {t:'06:25',n:'Meet at Changi Terminal 2 · check in',c:'transit',map:false,q:'Singapore Changi Airport Terminal 2 Departure Hall',m:'none',d:'Everyone meets at 06:25 (Singapore time), two hours before the flight, in the Terminal 2 Departure Hall on Level 2. Economy check-in is at Rows 5 and 6; Premium Economy and Business use Row 3. Counters close at 07:45, 40 minutes before departure.',optL:'Check-in row',opt:'Rows can change on the day: check the screens in the Departure Hall when you arrive.',fl:{code:'SQ 620',no:'SQ/620',y:2026,m:11,d:3}},
+  {t:'08:25',n:'SQ 620 · Changi T2 → Osaka KIX T1',c:'transit',map:false,q:'Singapore Changi Airport Terminal 2',m:'none',d:'Boeing 787-10, about 6 hours. The gate is assigned on the day (recent SQ 620 flights used the F gates in Terminal 2). Go to the gate as soon as it shows on the screens after immigration. Japan is 1 hour ahead of Singapore, so set watches forward.',fl:{code:'SQ 620',no:'SQ/620',y:2026,m:11,d:3}},
+  {t:'15:30',n:'Land at Kansai Airport Terminal 1',c:'transit',ll:[34.4347,135.2440],map:false,q:'Kansai International Airport Terminal 1',m:'none',d:'Immigration and bags (~1 hour). Buy or top up everyone’s ICOCA at the station ticket machines in the airport before heading out, then meet the airport transfer.'},
+  {t:'17:30',n:'Check in at the Airbnb',home:true,c:'home',ll:HOME.ll,q:HOME.q,m:'taxi',l:['taxi'],how:'Booked airport transfer from KIX Terminal 1 to the Airbnb door, about 1 hour by road.',d:'Address: 2-11-2 Nippombashi, Chuo-ku, Osaka-shi, Osaka-fu 542-0073, Japan. Room 201: Junne and family · Room 202: Jaslyn and family · Room 203: Dee and family. Rest and freshen up.'},
+  {t:'18:45',n:'Dotonbori · Ebisubashi & Glico sign',s:'Dotonbori',c:'sight',ll:[34.6687,135.5013],q:'Ebisubashi Bridge Dotonbori Osaka',m:'walk',how:'Walk ~10 min west along Sennichimae.',d:'Canal lights, the Glico Running Man, Ebisubashi Bridge.',eat:'Street-food crawl: takoyaki, gyoza, karaage skewers, then taiyaki or matcha soft-serve.',cost:'1,800'},
+  {t:'20:15',n:'Don Quijote Dotonbori',s:'Don Quijote',c:'shop',ll:[34.6690,135.5032],q:'Don Quijote Dotonbori',m:'walk',how:'Walk 3 min east along the canal.',d:'First look at snacks, KitKat flavours and toiletries; tax-free with passport. Ferris wheel optional.',cost:'1,000'},
+  {t:'21:30',n:'Back to the Airbnb',home:true,c:'home',ll:HOME.ll,q:HOME.q,m:'walk',how:'Walk ~12 min.'}
+ ],
+ warn:{h:'Flight SQ 620 · Tue 3 Nov',items:['Meet at 06:25 at Changi Terminal 2, Departure Hall (Level 2): two hours before departure.','Check-in: Economy Rows 5–6 · Premium Economy and Business Row 3. Counters close at 07:45.','SQ 620 · Boeing 787-10 · departs Changi T2 08:25 → arrives Kansai T1 15:30 (Japan time).','Gate: assigned on the day. Tap “Live gate” on the flight stop for the current gate and any delay.']},
+ tips:['Load IC cards at the airport; they cover every train for the rest of the trip.','Save the big snack haul for MEGA Don Quijote on Day 2 — bigger store, less carrying.']},
+
+{id:2,date:'Wed 4 Nov',title:'Kuromon → Round1 → Den Den Town → Shinsekai',motif:'tower',who:'All 11 here',total:'≈ ¥7,800',hours:'10:30 → ~19:45',
+ lead:'A no-train day: market brunch and games right by the Airbnb, then a steady walk south through the anime district to the Tower Slider and kushikatsu. Home early, which suits tomorrow’s 07:05 USJ start.',
+ stops:[
+  {t:'10:30',n:'Kuromon Market',s:'Kuromon',c:'food',ll:[34.6654,135.5067],q:'Kuromon Ichiba Market Osaka',m:'walk',how:'Walk 3 min.',d:'Graze brunch while stalls are freshest; it gets pricier and busier after noon.',eat:'Grilled scallops, tamagoyaki, tuna and wagyu skewers (share the pricey ones), fruit cups.',cost:'2,000'},
+  {t:'12:00',n:'Round1 Stadium Sennichimae',s:'Round1',c:'fun',ll:[34.6657,135.5038],q:'Round1 Stadium Sennichimae',m:'walk',how:'Walk ~5 min west from Kuromon.',d:'Bowling, arcade, purikura photo booths, karaoke. Daytime is quieter, and there are no late-evening age limits for the under-16s.',cost:'2,000'},
+  {t:'14:00',n:'Joshin Super Kids Land · Den Den Town',s:'Joshin Kids Land',c:'shop',ll:[34.6588,135.5060],addr:'4-12-4 Nipponbashi, Naniwa-ku · 10:00–20:00 · 4 min from Ebisucho Exit 1-B',q:'Joshin Super Kids Land Nipponbashi',m:'walk',how:'Walk ~12 min south-east into Den Den Town, on Sakaisuji.',d:'Five-floor toy and hobby store. 1F character figures and Gunpla kits · 2F modelling tools and paints · 3F official Tamiya floor with Mini 4WD cars and parts · 4F Tomica die-cast cars, RC cars · 5F KATO and TOMIX model trains. Tax-free with passport over ¥5,000.',bey:'First Beyblade stop and the best chance to buy. Ask staff for ベイブレード (beiburedo) if you can’t spot it; popular Beyblade X sets sell out fast, so buy on the spot.'},
+  {t:'14:45',n:'Animate Osaka Nipponbashi · Ota Road',s:'Animate',c:'shop',ll:[34.6596,135.5045],q:'Animate Osaka Nipponbashi',m:'walk',how:'Walk 3 min west onto Ota Road.',d:'Osaka’s anime district. Teens can split off with a meeting time at Animate.',shop:'Animate (anime goods), Super Potato (retro games), Mandarake, Lashinbang, Melonbooks, Gunpla and capsule-toy shops.'},
+  {t:'15:15',n:'Yellow Submarine Namba Main Store',s:'Yellow Submarine',c:'shop',ll:[34.6600,135.5025],addr:'Kawai Bldg, 2-1-3 Nambanaka, Naniwa-ku · Mon–Fri 12:00–20:00, Sat 11:00–20:00, Sun 11:00–19:00 · irregular closing days',q:'Yellow Submarine Namba Osaka',m:'walk',how:'Walk ~5 min west from Ota Road towards Nankai Namba.',d:'Trading card specialist (イエローサブマリン なんば本店): single cards, booster boxes and a buyback counter. Back-up visit on Day 9 if needed — it is 3–5 min from Namba Parks.',bey:'Card shop first; Beyblade stock is not confirmed, so treat it as a bonus look.'},
+  {t:'16:00',n:'Tsutenkaku Tower Slider',s:'Tsutenkaku',c:'fun',ll:[34.6525,135.5063],q:'Tsutenkaku Tower Osaka',m:'walk',how:'Walk ~15 min south past Ebisucho into Shinsekai, or Sakaisuji Line Nippombashi → Ebisucho, 1 stop, ¥190.',d:'A 60 m slide down the outside of the tower in about 10 seconds. Riders must be 7–65 and at least 120 cm. Observation deck optional.',cost:'1,000'},
+  {t:'16:45',n:'Sennariya Coffee',s:'Sennariya',c:'cafe',ll:[34.6521,135.5056],q:'Sennariya Coffee Shinsekai',m:'walk',how:'Walk 2 min.',d:'Retro kissaten known as the birthplace of Osaka’s mixed juice.',cost:'600'},
+  {t:'17:15',n:'MEGA Don Quijote Shinsekai',s:'MEGA Donki',c:'shop',ll:[34.6510,135.5052],addr:'3-4-36 Ebisuhigashi, Naniwa-ku · 9:00–5:00',q:'MEGA Don Quijote Shinsekai',m:'walk',how:'Walk 4 min south.',d:'The big snack and souvenir run, tax-free with passport.'},
+  {t:'18:00',n:'Kushikatsu Daruma Shinsekai Sohonten',s:'Kushikatsu Daruma',c:'food',ll:[34.6519,135.5064],q:'Kushikatsu Daruma Shinsekai Sohonten',m:'walk',how:'Walk 4 min.',d:'The original branch. House rule: never double-dip in the shared sauce.',cost:'2,000',alt:'No need to go elsewhere: plenty of skewers are not beef — pork, chicken, prawn, fish, vegetables, cheese.'},
+  {t:'19:30',n:'Back to the Airbnb',home:true,c:'home',ll:HOME.ll,q:HOME.q,m:'train',l:['sakaisuji'],how:'Sakaisuji Line Ebisucho → Nippombashi, 1 stop, ¥190, or walk ~20 min.',d:'Free evening: rest, pack USJ bags and buy tomorrow’s konbini breakfast.',cost:'190'}
+ ],
+ tips:['Buy Tower Slider tickets at the counter as soon as you reach Shinsekai.','At Round1, check the daytime bowling and arcade bundles at the counter; they are often cheaper than paying per game.','Adults can browse Kuromon’s kitchenware and snack shops while teens shop Den Den Town.']},
+
+{id:3,date:'Thu 5 Nov',title:'Universal Studios Japan',motif:'coaster',who:'All 11 · last full day with Junne’s family',total:'≈ ¥4,800 + ticket',hours:'07:10 → 21:30',
+ lead:'An early start so everyone is at the USJ gate by 08:00 and in the first wave when it opens — the best way to get more rides and an early Super Nintendo World slot. The ticket is the trip’s one big spend, so buy it before you fly.',
+ stops:[
+  {t:'07:10',n:'Kintetsu Nippombashi Station',s:'Nippombashi Stn',c:'transit',ll:[34.6662,135.5058],q:'Kintetsu Nippombashi Station',m:'walk',how:'Leave the Airbnb at 07:05 and walk 5 min.',d:'Grab-and-go breakfast: buy onigiri, sandwiches and drinks at a konbini the night before, or at the station on the way. Trains run every few minutes this early.'},
+  {t:'07:15',n:'Universal City Station',s:'Universal City',c:'transit',ll:[34.6676,135.4352],q:'Universal City Station',m:'train',l:['hanshin','jr'],how:'Hanshin Namba Line to Nishikujo (~8 min) → JR Yumesaki Line to Universal City (~5 min). Arrive ~07:45, ≈¥400. Avoid the 07:30–08:30 weekday rush by staying on this early train.',cost:'≈400'},
+  {t:'08:00',n:'Universal Studios Japan · main gate',s:'USJ',usj:true,c:'fun',ll:[34.6654,135.4323],q:'Universal Studios Japan',m:'walk',how:'Walk 5 min through CityWalk to the gate. Be in the queue by 08:00.',d:'Gates often open before the posted time. Scan tickets, claim Super Nintendo World timed entry in the USJ app straight away, then head for Mario Kart or Harry Potter while queues are shortest.',cost:'ticket'},
+  {t:'12:00',n:'Lunch inside the park',c:'food',map:false,q:'Kinopio Cafe Universal Studios Japan',m:'none',eat:'Kinopio’s Café (inside Nintendo World) or Mel’s Drive-In.',cost:'1,800'},
+  {t:'13:00',n:'Nintendo World → Harry Potter → Minions',c:'fun',map:false,q:'Super Nintendo World Osaka',m:'none',d:'Your Nintendo World slot, then the Wizarding World and Minion Park; Jurassic Park in the late-afternoon lull. Junne’s 4-year-old: Minion Park and Universal Wonderland have the most rides with no height limit.',eat:'Snacks: popcorn, Minion buns, butterbeer.',cost:'1,500'},
+  {t:'19:30',n:'Universal CityWalk',s:'CityWalk',c:'food',ll:[34.6668,135.4357],q:'Universal CityWalk Osaka',m:'walk',how:'Walk out through the main gate.',d:'Last souvenirs on the way out.',eat:'Quick ramen or konbini dinner.',cost:'1,000'},
+  {t:'20:45',n:'Back to the Airbnb',home:true,c:'home',ll:HOME.ll,q:HOME.q,m:'train',l:['jr','hanshin'],how:'JR to Nishikujo → Hanshin to Kintetsu Nippombashi, ≈¥400, then walk 5 min. Early night after the early start.',cost:'≈400'}
+ ],
+ warn:{h:'Tickets',items:['1-Day Studio Pass: ¥8,900–11,800 for ages 12+, ¥5,700–7,500 for ages 4–11, depending on the date’s price tier. Check the 5 Nov price when you buy.','Sold online only. Register everyone’s QR code in the USJ app before the day.','A 12-year-old still in primary school can buy the child ticket.']},
+ tips:['Check the USJ app or website the week before for 5 Nov opening hours (usually 08:30–09:00); an 08:00 arrival puts you near the front either way.','Set two alarms and lay out bags, tickets and IC cards the night before.','Express Pass is optional with this early start; it still helps for Mario Kart and Harry Potter later in the day.','Junne’s family flies out tomorrow; pack the night before if their flight is early.']},
+
+{id:4,date:'Fri 6 Nov',title:'Shinsaibashi → Amemura → Orange Street',motif:'arcade',who:'7 · Junne’s family departs',total:'≈ ¥3,400',
+ lead:'The big shopping day: one clockwise walking loop through Osaka’s main arcade, its youth district and its streetwear street, ending back in Namba. Junne’s family can join the morning before their airport train.',
+ stops:[
+  {t:'10:30',n:'Shinsaibashi-suji arcade (north end)',s:'Shinsaibashi-suji',c:'shop',ll:[34.6760,135.5017],q:'Shinsaibashi-suji Shopping Street',m:'train',l:['sakaisuji'],how:'Sakaisuji Line Nippombashi → Nagahoribashi, 1 stop, ¥190; walk 5 min west.',cost:'190'},
+  {t:'10:45',n:'Daimaru Shinsaibashi · Pokémon Center Osaka DX',s:'Daimaru',c:'shop',ll:[34.6735,135.5010],q:'Pokemon Center Osaka DX Daimaru Shinsaibashi',m:'walk',how:'Stroll south along the arcade.',shop:'Pokémon Center Osaka DX & Pokémon Café, Uniqlo, GU, Daiso, 3Coins; drugstores for adults’ souvenir snacks and skincare.'},
+  {t:'12:30',n:'Kogaryu Takoyaki',s:'Kogaryu',c:'food',ll:[34.6723,135.4986],q:'Kogaryu Takoyaki Amerikamura',m:'walk',how:'Cross Midosuji west into Amerikamura, ~8 min.',d:'Takoyaki stand by Triangle Park.',cost:'700'},
+  {t:'13:15',n:'LiLo Coffee Roasters',s:'LiLo',c:'cafe',ll:[34.6729,135.4976],q:'LiLo Coffee Roasters Osaka',m:'walk',how:'Walk 2 min.',d:'Tiny specialty roaster.',cost:'700'},
+  {t:'13:45',n:'Amerikamura · Mandarake Grand Chaos',s:'Amemura',c:'shop',ll:[34.6733,135.4970],q:'Mandarake Grand Chaos Osaka',m:'walk',how:'Walk 2 min.',shop:'Vintage and streetwear shops, Big Step mall, Mandarake Grand Chaos (second-hand anime, manga, figures).'},
+  {t:'14:45',n:'Orange Street (Tachibana-dori)',s:'Orange St',c:'shop',ll:[34.6700,135.4935],q:'Orange Street Minamihorie Osaka',m:'walk',how:'Walk ~10 min south-west into Minami-Horie.',shop:'Japanese streetwear labels, sneaker and select shops, interior stores. Shops open around 11:00–12:00.'},
+  {t:'16:00',n:'Namba Yasaka Shrine',s:'Namba Yasaka',c:'sight',ll:[34.6613,135.4960],q:'Namba Yasaka Shrine',m:'walk',how:'Walk ~15 min south.',d:'The giant lion-head stage. Grounds close around 17:00.',cost:'free'},
+  {t:'17:00',n:'Gyukatsu Motomura Namba',s:'Motomura',c:'food',ll:[34.6643,135.5014],addr:'B1, 3-3-1 Namba, Chuo-ku',q:'Gyukatsu Motomura Namba',m:'walk',how:'Walk ~10 min east.',d:'Sear your own beef cutlet on a hot stone. Queue early.',cost:'1,800',alt:'Tempura Tsunahachi (Takashimaya Osaka 8F, ~2 min away) for prawn, fish and vegetable tempura sets, or the Takashimaya / Namba City restaurant floors for sushi, udon and soba. Easiest plan: split up and regroup — they are 2 minutes apart.'},
+  {t:'18:15',n:'Bic Camera Namba',s:'Bic Camera',c:'shop',ll:[34.6660,135.5030],addr:'Entrance of the Sennichimae arcade · 10:00–21:00 · toys and games on 7F',q:'Bic Camera Namba',m:'walk',how:'Walk ~5 min north-east from Motomura.',d:'Electronics megastore. 7F toys and games: video games and consoles, board games, puzzles, character toys; tax-free counter on 5F.',bey:'Second Beyblade stop: check here for anything Joshin was missing.'},
+  {t:'19:00',n:'Hozenji Yokocho & Dotonbori',s:'Hozenji',c:'sight',ll:[34.6680,135.5025],q:'Hozenji Yokocho',m:'walk',how:'Walk ~5 min west.',d:'Lantern-lit stone alley, then Dotonbori after dark.'},
+  {t:'20:00',n:'Back to the Airbnb',home:true,c:'home',ll:HOME.ll,q:HOME.q,m:'walk',how:'Walk ~10 min.'}
+ ],
+ tips:['Tax-free: spend ¥5,000+ in one store on one day and show your passport.','Lightest-cost day: about ¥7,500 per person is left for shopping within the cap.']},
+
+{id:5,date:'Sat 7 Nov',title:'Osaka Castle → Tenjinbashisuji → Umeda',motif:'castle',who:'6 · Calvin flies out early',total:'≈ ¥8,800 adult · ¥7,600 teen',
+ lead:'A south-to-north sweep across the city: castle in the late morning, Japan’s longest shopping arcade and Osaka’s best-value sushi in the afternoon, Umeda’s skyline at night.',
+ stops:[
+  {t:'11:00',n:'Osaka Castle',s:'Osaka Castle',c:'sight',ll:[34.6873,135.5262],q:'Osaka Castle Main Tower',m:'train',l:['sennichimae','tanimachi'],how:'Nippombashi → Sennichimae Line to Tanimachi 9-chome → Tanimachi Line to Tanimachi 4-chome, ~15 min, ≈¥240. Walk 15 min in via Otemon Gate.',d:'Park is free. Main Tower museum and 8F view: ¥1,200 adults, free for junior-high age and younger (bring passports). Open 9:00–18:00.',cost:'240 + 1,200 adults'},
+  {t:'12:45',n:'Tokumasa Morinomiya',s:'Tokumasa',c:'food',ll:[34.6820,135.5323],addr:'1-16-22 Morinomiya-chuo, Chuo-ku',q:'Tokumasa Udon Morinomiya',m:'walk',how:'Walk ~15 min to the park’s south-east corner.',eat:'Beef curry udon; expect a short lunch queue.',cost:'1,100'},
+  {t:'14:15',n:'Tenjinbashisuji Shotengai',s:'Tenjinbashisuji',c:'shop',ll:[34.7040,135.5118],q:'Tenjinbashisuji Shopping Street',m:'train',l:['jr'],how:'JR Loop Line Morinomiya → Temma, ~10 min, ≈¥190.',d:'Stroll north through Japan’s longest covered arcade (~2.6 km).',eat:'Croquettes, taiyaki, local snacks.',cost:'190 + 500'},
+  {t:'14:45',n:'Osaka Museum of Housing and Living',s:'Housing Museum',c:'sight',ll:[34.7109,135.5113],q:'Osaka Museum of Housing and Living',m:'walk',how:'Walk north along the arcade to Tenjimbashisuji 6-chome.',d:'Optional. A full-size Edo-era Osaka street rebuilt indoors.',cost:'≈600'},
+  {t:'16:00',n:'Harukoma Honten',s:'Harukoma',c:'food',ll:[34.7077,135.5111],addr:'5-5-2 Tenjinbashi, Kita-ku · 11:00–21:30 · closed Tue',q:'Harukoma Sushi Tenjinbashi',m:'walk',how:'Walk 5 min back south in the arcade.',d:'No bookings; the queue moves fast. 16:00 dodges both peaks, and they close early if fish runs out.',eat:'Otoro, negitoro roll, grilled eel.',cost:'2,500'},
+  {t:'17:30',n:'Nintendo Osaka · Daimaru Umeda 13F',s:'Nintendo Osaka',c:'shop',ll:[34.7019,135.4962],q:'Nintendo OSAKA Daimaru Umeda',m:'train',l:['tanimachi'],how:'Tanimachi Line Tenjimbashisuji 6-chome → Higashi-Umeda, 2 stops, ¥190; walk 5 min.',d:'The same 13F also has Pokémon Center Osaka, a TOMICA shop and a Plarail train-set shop. Department store closes ~20:00.',bey:'Ask at the TOMICA shop too: it is run by Takara Tomy, the company that makes Beyblade.',cost:'190'},
+  {t:'18:15',n:'Yodobashi Camera Multimedia Umeda',s:'Yodobashi',c:'shop',ll:[34.7045,135.4965],q:'Yodobashi Camera Multimedia Umeda',m:'walk',how:'Walk ~5 min north across from Osaka Station.',d:'Huge electronics store. 5F toy floor where kids can try toys for free, next to a large gacha capsule-toy area; video games and consoles on the same building’s game floors. Tax-free with passport.',bey:'Third and final Beyblade stop: the biggest toy selection on the trip.'},
+  {t:'19:00',n:'Umeda Sky Building · Kuchu Teien',s:'Umeda Sky',c:'sight',ll:[34.7053,135.4896],q:'Umeda Sky Building Kuchu Teien Observatory',m:'walk',how:'Walk ~12 min north-west via Grand Front Osaka.',d:'Rooftop night view; sunset is ~17:00. Then Takimi Koji retro alley in B1. Last entry 22:00.',cost:'2,000 (¥500 ages 4–12)'},
+  {t:'21:00',n:'Back to the Airbnb',home:true,c:'home',ll:HOME.ll,q:HOME.q,m:'train',l:['midosuji'],how:'Walk to Umeda Stn → Midosuji Line to Namba, ~8 min, ¥240 → walk ~12 min.',cost:'240'}
+ ],
+ tips:['Teens enter the castle free: carry passports as proof of age.','Harukoma is cash-friendly and fast; order while you queue.']},
+
+{id:6,date:'Sun 8 Nov',title:'Nara day trip',motif:'deer',who:'6 travelling',total:'≈ ¥5,700',
+ lead:'A direct train from the Airbnb’s own station puts you in Nara in under 40 minutes. The day is a gentle eastward walk — mochi, deer, the Great Buddha — then back the same line.',
+ stops:[
+  {t:'11:15',n:'Nakatanidou',s:'Nakatanidou',c:'food',ll:[34.6815,135.8285],q:'Nakatanidou Nara',m:'train',l:['kintetsu'],how:'Walk 5 min to Kintetsu Nippombashi → Rapid Express or Express to Kintetsu Nara, ~38 min, ≈¥680 (skip the Limited Express). Walk 3 min to the end of Higashimuki arcade.',d:'High-speed mochi pounding happens several times a day when a batch is made; wait a few minutes if it’s quiet.',eat:'Fresh yomogi mochi.',cost:'680 + 300'},
+  {t:'11:45',n:'Kofuku-ji pagoda & Nara Park deer',s:'Nara Park',c:'sight',ll:[34.6845,135.8355],q:'Nara Park',m:'walk',how:'Walk east into the park, ~10 min.',d:'Five-storey pagoda (free to view). Bow to the deer and they bow back; hold crackers high and keep bags zipped.',cost:'200 crackers'},
+  {t:'13:00',n:'Yumekaze Hiroba',s:'Yumekaze',c:'food',ll:[34.6872,135.8378],q:'Yumekaze Hiroba Nara',m:'walk',how:'Walk ~8 min north-east.',eat:'Kakinoha-zushi (persimmon-leaf sushi) or udon.',cost:'1,500'},
+  {t:'14:00',n:'Todai-ji Daibutsuden',s:'Todai-ji',c:'sight',ll:[34.6890,135.8398],q:'Todaiji Temple Daibutsuden',m:'walk',how:'Walk 5 min through Nandaimon Gate.',d:'The 15 m bronze Great Buddha. Kids can crawl through the pillar hole said to bring luck. After 14:00 the tour-group wave has passed.',cost:'≈800'},
+  {t:'15:15',n:'Nigatsu-do balcony',s:'Nigatsu-do',c:'sight',ll:[34.6895,135.8442],q:'Nigatsudo Nara',m:'walk',how:'Walk ~10 min uphill.',d:'Optional, free. A sweeping view over Nara; quiet and very scenic.',cost:'free'},
+  {t:'16:30',n:'Higashimuki & Mochiidono arcades',s:'Higashimuki',c:'shop',ll:[34.6829,135.8276],q:'Higashimuki Shopping Street Nara',m:'walk',how:'Walk ~20 min back downhill to the station area.',shop:'Deer-themed goods, Nara pickles, mochi gift boxes.'},
+  {t:'18:30',n:'Dinner in Sennichimae / Ura-Namba',c:'food',map:false,q:'Ura Namba Osaka',m:'train',l:['kintetsu'],how:'Kintetsu Nara → Kintetsu Nippombashi, ~38 min, ≈¥680; walk 5–10 min.',eat:'Osaka-style ramen or izakaya small plates.',cost:'680 + 1,500'}
+ ],
+ tips:['Deer get pushy when they see crackers: feed quickly and show empty hands.','Kintetsu Nara is a terminus, so trains back always wait at the platform; take the next Rapid Express.']},
+
+{id:7,date:'Mon 9 Nov',title:'Kyoto: Arashiyama → Kawaramachi',motif:'bamboo',who:'6 travelling',total:'≈ ¥6,900',
+ lead:'West to east across Kyoto with no backtracking: bamboo and river views first, then the Randen tram into downtown for Nishiki Market and anime shops, and a direct ride home. Monday keeps Arashiyama’s crowds manageable.',
+ stops:[
+  {t:'11:45',n:'Togetsukyo Bridge & % Arabica Arashiyama',s:'% Arabica',c:'cafe',ll:[35.0133,135.6772],q:'% Arabica Kyoto Arashiyama',m:'train',l:['sakaisuji','hankyu'],how:'Nippombashi → Sakaisuji Line train running through onto the Hankyu Kyoto Line (change at Awaji if needed) → change at Katsura for Hankyu Arashiyama. ~70 min, ≈¥690. Alt: Midosuji to Umeda + Hankyu, ≈¥640. Walk 5 min across the bridge.',d:'Grab coffee as soon as you arrive; the queue grows after noon.',cost:'690 + 600'},
+  {t:'12:30',n:'Arashiyama Yoshimura (soba)',s:'Yoshimura',c:'food',ll:[35.0136,135.6782],q:'Arashiyama Yoshimura',m:'walk',how:'Walk 1 min.',eat:'Soba with river views, or street snacks: croquettes, matcha soft-serve.',cost:'1,500'},
+  {t:'13:30',n:'Arashiyama Bamboo Grove & Tenryu-ji',s:'Bamboo Grove',c:'sight',ll:[35.0170,135.6713],q:'Arashiyama Bamboo Grove',m:'walk',how:'Walk ~10 min north-west.',d:'The grove is free. Tenryu-ji’s garden next door is optional (≈¥500).',cost:'0–500'},
+  {t:'15:45',n:'Nishiki Market',s:'Nishiki',c:'food',ll:[35.0050,135.7648],q:'Nishiki Market Kyoto',m:'train',l:['randen','hankyu'],how:'Randen tram Arashiyama → Shijo-Omiya, ¥250 flat, ~22 min → Hankyu Omiya → Kyoto-Kawaramachi, 2 stops, ≈¥170; walk 5 min.',d:'Stalls start closing around 17:00, so go here first.',eat:'Tamagoyaki, soy-milk doughnuts, skewers.',cost:'420 + 1,000'},
+  {t:'16:45',n:'Animate Kyoto & Lashinbang Kyoto',s:'Animate Kyoto',c:'shop',ll:[35.0063,135.7683],q:'Animate Kyoto',m:'walk',how:'Walk ~5 min east to the Kawaramachi–Teramachi area.',shop:'Anime goods and second-hand figures; Shinkyogoku and Teramachi arcades for yatsuhashi and matcha sweets.'},
+  {t:'18:30',n:'Dinner on Kiyamachi',s:'Kiyamachi',c:'food',ll:[35.0045,135.7712],q:'Kiyamachi Kyoto restaurants',m:'walk',how:'Walk ~5 min east.',eat:'Ramen or donburi.',cost:'1,500'},
+  {t:'21:00',n:'Back to the Airbnb',home:true,c:'home',map:false,ll:HOME.ll,q:HOME.q,m:'train',l:['hankyu','sakaisuji'],how:'Hankyu Kyoto-Kawaramachi → Awaji → Sakaisuji Line to Nippombashi, ~60 min, ≈¥690.',cost:'690'}
+ ],
+ tips:['Through-train fares are estimates; check the exact transfer in Google Maps that morning.','The Randen tram is single-car and retro — kids like riding up front.']},
+
+{id:8,date:'Tue 10 Nov',title:'Katsuo-ji daruma temple → Minoo Falls',motif:'daruma',who:'6 travelling',total:'≈ ¥7,200',
+ lead:'Up into the hills north of Osaka: the “winning” daruma temple first, then down to the waterfall and a riverside walk to the train. The route only ever goes downhill. Back for a last-night okonomiyaki dinner.',
+ stops:[
+  {t:'11:15',n:'Minoh-Kayano Station · bus stop 8',s:'Minoh-Kayano',c:'transit',ll:[34.8327,135.4893],q:'Minoh-Kayano Station',m:'train',l:['midosuji'],how:'Walk ~12 min to Namba → Midosuji Line, which runs straight through to the Kita-Osaka Kyuko terminus Minoh-Kayano, ~35 min, ≈¥570.',cost:'570'},
+  {t:'11:45',n:'Katsuo-ji',s:'Katsuo-ji',c:'sight',ll:[34.8648,135.4917],q:'Katsuoji Temple Minoh',m:'bus',l:['bus'],how:'Hankyu Bus Route 30 from stop 8, ~20 min, ≈¥800. Buses are infrequent — check the timetable; a taxi is ~15 min.',d:'Thousands of red daruma across the hillside. Entry ¥500 high-school age and up, ¥400 primary and junior-high. Buy a small daruma, make a wish, paint in one eye.',cost:'800 + 1,000'},
+  {t:'13:45',n:'Minoo Falls teahouses',s:'Falls teahouses',c:'food',ll:[34.8536,135.4721],q:'Minoo Falls',m:'taxi',l:['taxi'],how:'Taxi ~15–20 min, ≈¥3,000 per car (2 cars for 6, ≈¥1,000 each). Hikers: forest trail down, 1.5–2 hours.',eat:'Soba or udon at the falls-side teahouses.',cost:'1,000 + 1,100'},
+  {t:'14:30',n:'Minoo Falls & riverside walk',s:'Minoo Falls',c:'sight',ll:[34.8475,135.4705],q:'Minoo Park waterfall trail',m:'walk',how:'The 33 m falls are right by the teahouses.',d:'Then a gentle 2.8 km paved walk down the river, about 45 min. Autumn colour should be starting.',eat:'Momiji tempura — fried maple leaves, Minoo’s signature snack.',cost:'400'},
+  {t:'15:45',n:'Hankyu Minoo Station',s:'Hankyu Minoo',c:'transit',ll:[34.8355,135.4701],q:'Hankyu Minoo Station',m:'walk',how:'End of the riverside path.'},
+  {t:'18:30',n:'Mizuno okonomiyaki, Dotonbori',c:'food',map:false,q:'Mizuno okonomiyaki Dotonbori',m:'train',l:['hankyu','midosuji'],how:'Hankyu Minoo → Ishibashi Handai-mae → Osaka-Umeda, ~30 min, ≈¥280 → Midosuji Line to Namba, ¥240. Rest at home 17:00–18:30.',d:'Michelin Bib Gourmand; expect a queue.',cost:'520 + 1,800'},
+  {t:'20:00',n:'Last Dotonbori night',c:'sight',map:false,q:'Tombori River Cruise',m:'walk',how:'Right outside Mizuno.',d:'Final night walk; optional Tombori River Cruise. Home by 22:00.'}
+ ],
+ tips:['Some ticket sites ask you to book Katsuo-ji entry online; check the temple’s site the week before.','Wear proper walking shoes; the falls path is paved but long.']},
+
+{id:9,date:'Wed 11 Nov',title:'Namba wind-down → KIX',motif:'departure',who:'6 · SQ 623 departs 23:20',total:'≈ ¥14,000 (farewell splurge)',hours:'10:30 → 20:50',
+ lead:'Room 202 is kept until 18:00, so the bags stay at the Airbnb all day: whale sharks at Osaka Aquarium Kaiyukan first, back at 14:30 to move all the luggage into Room 202, then a last loop of Namba shops. Check out at 18:00, snow crab farewell dinner on Dotonbori (season opens 6 Nov), then a booked van to KIX from near the Airbnb.',
+ stops:[
+  {t:'11:00',n:'Osaka Aquarium Kaiyukan',s:'Kaiyukan',c:'fun',ll:[34.6545,135.4289],q:'Osaka Aquarium Kaiyukan',m:'train',l:['sakaisuji','chuo'],how:'Leave at 10:30 with day bags only. Sakaisuji Line Nippombashi → Sakaisuji-Hommachi (2 stops) → Chuo Line to Osakako. ~25 min, ¥290; walk 5 min from Exit 1.',d:'Whale sharks in the huge Pacific Ocean tank, plus penguins, rays and otters. Allow 2–3 hours; there is no re-entry. Prices change by date: adults (16+) ¥2,700–3,200, school-age kids ¥1,400–1,650. Book online once the 11 Nov price shows.',cost:'290 + 2,700–3,200'},
+  {t:'13:15',n:'Tempozan Marketplace',s:'Tempozan',c:'food',ll:[34.6556,135.4303],q:'Tempozan Marketplace',m:'walk',how:'Walk 2 min next door.',d:'Mall beside the aquarium with an easy food court; the giant Tempozan Ferris wheel is outside.',eat:'Quick lunch: okonomiyaki, takoyaki, ramen or curry. Keep it light before the crab dinner.',cost:'1,200'},
+  {t:'14:30',n:'Move all luggage into Room 202',home:true,c:'home',ll:HOME.ll,q:HOME.q,m:'train',l:['chuo','sakaisuji'],how:'Leave Tempozan by 14:00. Chuo Line Osakako → Sakaisuji-Hommachi → Sakaisuji Line to Nippombashi, ~25 min, ¥290; walk 5 min.',d:'Move everyone’s luggage into Room 202, then final pack and a quick shower before the overnight flight. Room 203 checks out by 15:00. Room 202 stays until 18:00 (late check-out agreed with host Kosuke).',optL:'Reminder',opt:'Place ¥4,000 cash on the table in Room 202.',cost:'290'},
+  {t:'15:30',n:'Namba Parks shops & rooftop gardens',s:'Namba Parks',c:'shop',ll:[34.6614,135.5020],q:'Namba Parks',m:'walk',how:'Walk ~12 min west from the Airbnb; Namba Parks is beside Nankai Namba.',d:'Terraced rooftop gardens for a slow last stroll.',shop:'Fashion and lifestyle shops over several floors.',eat:'Café break: coffee and cake.',cost:'700'},
+  {t:'16:15',n:'Takashimaya Osaka B1 food hall',s:'Takashimaya',c:'shop',ll:[34.6640,135.5012],q:'Takashimaya Osaka Store Namba',m:'walk',how:'Walk 3 min north; Takashimaya sits on top of Nankai Namba.',d:'Edible souvenirs, tax-free with passport.',shop:'Boxed Osaka sweets and snack gifts, matcha treats, senbei crackers.'},
+  {t:'16:40',n:'Rikuro Ojisan cheesecake',s:'Rikuro',c:'shop',ll:[34.6649,135.5009],q:'Rikuro Ojisan no Mise Namba',m:'walk',how:'Walk ~5 min north.',shop:'Buy a whole cheesecake to share.',cost:'300'},
+  {t:'17:00',n:'Hozenji Yokocho',s:'Hozenji',c:'sight',ll:[34.6680,135.5025],q:'Hozenji Temple Osaka',m:'walk',how:'Walk ~5 min north.',d:'Splash water on the moss-covered Fudo statue for luck.',cost:'free'},
+  {t:'17:15',n:'Don Quijote Dotonbori',s:'Don Quijote',c:'shop',ll:[34.6690,135.5032],q:'Don Quijote Dotonbori',m:'walk',how:'Walk 3 min north to the canal.',shop:'Last snack and cosmetics top-ups (KitKats, Japanese snacks, skincare); tax-free with passport. Keep it quick: leave by 17:35.'},
+  {t:'17:45',n:'Check out of Room 202 by 18:00',home:true,c:'home',ll:HOME.ll,q:HOME.q,m:'walk',how:'Walk ~10 min east.',d:'Collect all the bags from Room 202 and check out by 18:00.',optL:'Reminder',opt:'Make sure the ¥4,000 cash is on the table in Room 202 before you leave.'},
+  {t:'18:15',n:'Kani Doraku Dotonbori',s:'Kani Doraku',c:'food',ll:[34.6688,135.5040],addr:'Higashi branch: 1-1-3 Dotonbori, Chuo-ku · 11:30–22:00 (LO 21:30)',q:'Kani Doraku Dotonbori',m:'walk',how:'Walk ~10 min west with the bags (or taxi ≈¥800–1,000 per car); look for the giant moving crab sign.',d:'Farewell snow crab dinner, right at the start of the season. Every course is crab, so it suits the non-beef eaters, and there is a kids’ menu. Book ahead for 18:15, ask for a private tatami room for 6 and tell them you’ll arrive with suitcases.',eat:'Crab course: sashimi, grilled, tempura, crab sushi, hotpot. Dinner averages ~¥6,000; choose a smaller set to spend less.',cost:'≈6,000'},
+  {t:'20:00',n:'Airport van → KIX Terminal 1 · SQ 623',c:'transit',map:false,q:'Kansai International Airport Terminal 1',m:'taxi',l:['taxi'],how:'Walk ~10 min back with the bags to the pickup point near the Airbnb. Pre-booked van, ~50 min to KIX.',fl:{code:'SQ 623',no:'SQ/623',y:2026,m:11,d:11},d:'Arrive ~20:50. Check-in opens ~3 h before. Keep tax-free items sealed. SQ 623 (Boeing 787-10) departs 23:20 from KIX Terminal 1 → Singapore 05:00, Thu 12 Nov.',opt:'Freshen up before the overnight flight. Café Lounge NODOKA (Aeroplaza 2F, next to Terminal 1) has private shower rooms with shampoo, conditioner, body soap and an amenity set: open 24 hours, ¥1,400 per 40 min. Or use the Terminal 1 gate-area coin showers after security: ¥800 per 15 min. Private rooms, so tattoos are no issue.',cost:'van (booked)'}
+ ],
+ warn:{h:'Check-out reminders',items:['14:30: move all the luggage into Room 202 (Jaslyn’s room). Room 203 (Dee’s room) checks out by 15:00 and cannot be extended.','Place ¥4,000 cash on the table in Room 202 (late check-out fee agreed with host Kosuke).','Room 202: check out by 18:00.','SQ 623 departs KIX Terminal 1 at 23:20: tap “Live gate” on the airport stop for the gate.','Get the ¥4,000 ready in the morning so it isn’t forgotten in the rush.']},
+ tips:['Pack the night before so the 14:30 luggage move into Room 202 is quick.','Book Kani Doraku (for 18:15, mention the suitcases) and Kaiyukan tickets in advance; both get busy.','Confirm the airport van’s pickup time and spot the day before. If it can collect you outside Kani Doraku instead, you skip the walk back with the bags.','Today runs about ¥3,000 over the daily cap because of the crab dinner. Cheaper days like Day 4 cover it across the trip.','Tax-free items stay sealed until you leave Japan; pack them in hand-carry.','The 22:00 home rule doesn’t apply today.']}
+];
+
+
+const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const enc=encodeURIComponent;
+const gmPlace=q=>`https://www.google.com/maps/search/?api=1&query=${enc(q)}`;
+const gmDir=(o,d,m)=>`https://www.google.com/maps/dir/?api=1&origin=${enc(o)}&destination=${enc(d)}&travelmode=${m}`;
+const travel=m=>m==='walk'?'walking':m==='taxi'?'driving':'transit';
+
+/* ---- icons ---- */
+const ICON={
+ sight:'<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 4h12M3.5 6.5h9M5 4v10M11 4v10"/></svg>',
+ food:'<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 8h12a6 6 0 0 1-12 0zM9 2l4 4M11 1.5l3 3"/></svg>',
+ cafe:'<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2.5 6h9v4a4 4 0 0 1-8 0zM11.5 7h1.5a1.5 1.5 0 0 1 0 3h-1.5M5 1.5v2M8 1.5v2"/></svg>',
+ shop:'<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 5h10l-1 9H4zM6 5V4a2 2 0 0 1 4 0v1"/></svg>',
+ fun:'<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M8 1.5l1.9 4 4.3.5-3.2 3 .9 4.3L8 11.2 4.1 13.3 5 9 1.8 6l4.3-.5z"/></svg>',
+ transit:'<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3.5" y="1.5" width="9" height="10" rx="2"/><path d="M3.5 7h9M5 14l1.5-2.5M11 14l-1.5-2.5"/></svg>',
+ home:'<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 7.5L8 2l6 5.5M4 6.5V14h8V6.5"/></svg>',
+ dir:'<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M8 1.5l6.5 6.5L8 14.5 1.5 8z"/><path d="M6 9.5V7.5h4M8.5 6l1.5 1.5L8.5 9"/></svg>',
+ pin:'<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M8 14.5s5-4.6 5-8.5a5 5 0 0 0-10 0c0 3.9 5 8.5 5 8.5z"/><circle cx="8" cy="6" r="1.8"/></svg>',
+ photo:'<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="1.5" y="3.5" width="13" height="10" rx="2"/><circle cx="8" cy="8.5" r="2.5"/><path d="M5.5 3.5l1-2h3l1 2"/></svg>'
+};
+
+/* ---- illustrations (hand-drawn motifs, theme-aware) ---- */
+const A='var(--accent)',G='var(--gold)',I='var(--ink)',M='var(--muted)',S='var(--accent-soft)';
+const MOTIF={
+ arrival:`<svg viewBox="0 0 150 110" aria-hidden="true"><path d="M8 30 Q75 8 142 30" fill="none" stroke="${M}" stroke-width="1"/>${[22,48,75,102,128].map((x,i)=>`<line x1="${x}" y1="${[26,19,16,19,26][i]}" x2="${x}" y2="${[34,27,24,27,34][i]}" stroke="${M}"/><rect x="${x-7}" y="${[34,27,24,27,34][i]}" width="14" height="18" rx="6" fill="${i%2?G:A}"/>`).join('')}<path d="M20 92 L118 72 L132 66 Q140 64 136 70 L124 78 L40 98 Z" fill="${I}"/><path d="M70 82 L56 100 L66 99 L88 78 Z" fill="${I}"/><path d="M104 74 L100 62 L108 62 L116 72 Z" fill="${I}"/></svg>`,
+ tower:`<svg viewBox="0 0 150 110" aria-hidden="true"><circle cx="118" cy="26" r="13" fill="${S}"/><path d="M58 104 L68 30 L82 30 L92 104" fill="none" stroke="${I}" stroke-width="3"/><path d="M60 90 L90 90 M63 70 L87 70 M66 50 L84 50 M61 90 L84 50 M89 90 L66 50" stroke="${I}" stroke-width="1.4" fill="none"/><rect x="62" y="22" width="26" height="10" fill="${A}"/><path d="M75 22 V8" stroke="${I}" stroke-width="2"/><path d="M84 46 Q118 52 104 76 Q94 92 120 100" fill="none" stroke="${G}" stroke-width="4" stroke-linecap="round"/><path d="M6 104 H144" stroke="${M}"/></svg>`,
+ coaster:`<svg viewBox="0 0 150 110" aria-hidden="true"><circle cx="75" cy="52" r="26" fill="none" stroke="${A}" stroke-width="5"/><path d="M4 92 Q30 92 49 60 M101 60 Q120 92 146 92" fill="none" stroke="${A}" stroke-width="5" stroke-linecap="round"/>${[20,40,110,130].map(x=>`<line x1="${x}" y1="${x<75?92-(x-4)*0.3:92-(146-x)*0.3}" x2="${x}" y2="104" stroke="${I}" stroke-width="2"/>`).join('')}<line x1="75" y1="78" x2="75" y2="104" stroke="${I}" stroke-width="2"/><rect x="62" y="22" width="12" height="7" rx="2" fill="${G}"/><rect x="76" y="22" width="12" height="7" rx="2" fill="${G}"/><path d="M4 104 H146" stroke="${M}"/></svg>`,
+ arcade:`<svg viewBox="0 0 150 110" aria-hidden="true">${[0,1,2].map(i=>`<path d="M${10+i*44} 50 Q${32+i*44} 18 ${54+i*44} 50" fill="none" stroke="${I}" stroke-width="2.5"/>`).join('')}<path d="M10 50 V104 M54 50 V104 M98 50 V104 M142 50 V104" stroke="${I}" stroke-width="2.5"/><rect x="22" y="70" width="20" height="24" rx="2" fill="${A}"/><path d="M27 70 Q32 60 37 70" fill="none" stroke="${A}" stroke-width="2"/><rect x="66" y="64" width="22" height="30" rx="2" fill="${G}"/><path d="M71 64 Q77 54 83 64" fill="none" stroke="${G}" stroke-width="2"/><rect x="110" y="74" width="20" height="20" rx="2" fill="${S}" stroke="${I}"/><path d="M4 104 H146" stroke="${M}"/></svg>`,
+ castle:`<svg viewBox="0 0 150 110" aria-hidden="true"><path d="M28 104 L36 80 H114 L122 104 Z" fill="${M}" opacity=".45"/><rect x="46" y="62" width="58" height="18" fill="${S}" stroke="${I}"/><path d="M38 64 Q75 54 112 64" fill="none" stroke="${A}" stroke-width="4"/><rect x="54" y="44" width="42" height="16" fill="${S}" stroke="${I}"/><path d="M46 46 Q75 37 104 46" fill="none" stroke="${A}" stroke-width="4"/><rect x="62" y="28" width="26" height="14" fill="${S}" stroke="${I}"/><path d="M54 30 Q75 20 96 30" fill="none" stroke="${A}" stroke-width="4"/><path d="M60 22 L66 16 M90 22 L84 16" stroke="${G}" stroke-width="3" stroke-linecap="round"/><path d="M4 104 H146" stroke="${M}"/></svg>`,
+ deer:`<svg viewBox="0 0 150 110" aria-hidden="true"><path d="M112 104 V40" stroke="${I}" stroke-width="2"/>${[0,1,2,3,4].map(i=>`<path d="M${98+i*2} ${46+i*12} H${126-i*2}" stroke="${A}" stroke-width="4"/>`).join('')}<ellipse cx="54" cy="70" rx="26" ry="13" fill="${G}"/><path d="M36 80 V102 M44 82 V102 M64 82 V102 M72 80 V102" stroke="${I}" stroke-width="3"/><path d="M74 62 Q82 50 84 38" stroke="${G}" stroke-width="8" stroke-linecap="round" fill="none"/><ellipse cx="88" cy="36" rx="9" ry="6" fill="${G}"/><path d="M84 30 L80 18 M80 22 L74 18 M88 30 L92 18 M92 22 L98 18" stroke="${I}" stroke-width="1.6"/><circle cx="90" cy="35" r="1.4" fill="${I}"/>${[44,54,62].map(x=>`<circle cx="${x}" cy="66" r="2" fill="${S}"/>`).join('')}<path d="M4 104 H146" stroke="${M}"/></svg>`,
+ bamboo:`<svg viewBox="0 0 150 110" aria-hidden="true">${[[22,6,A],[46,4,I],[70,7,G],[98,5,I],[124,6,A]].map(([x,w,c])=>`<rect x="${x}" y="4" width="${w}" height="100" rx="2" fill="${c}" opacity="${c===I?.75:1}"/>${[26,52,78].map(y=>`<line x1="${x-1}" y1="${y}" x2="${x+w+1}" y2="${y}" stroke="var(--surface)" stroke-width="1.5"/>`).join('')}`).join('')}<path d="M30 30 q14 -4 20 -14 M52 52 q-14 0 -20 -10 M76 26 q16 2 22 -8 M104 60 q14 -4 18 -14" fill="none" stroke="${M}" stroke-width="2" stroke-linecap="round"/></svg>`,
+ daruma:`<svg viewBox="0 0 150 110" aria-hidden="true"><path d="M112 6 V104 M120 6 V104 M128 10 V104" stroke="${M}" stroke-width="2" stroke-dasharray="6 5"/><ellipse cx="62" cy="62" rx="36" ry="40" fill="${A}"/><ellipse cx="62" cy="58" rx="20" ry="17" fill="var(--surface)"/><circle cx="54" cy="56" r="4.5" fill="${I}"/><circle cx="70" cy="56" r="4.5" fill="none" stroke="${I}" stroke-width="1.5"/><path d="M48 46 q6 -4 12 0 M64 46 q6 -4 12 0" stroke="${I}" stroke-width="2" fill="none"/><path d="M56 68 q6 4 12 0" stroke="${I}" stroke-width="1.6" fill="none"/><path d="M44 88 q18 8 36 0" stroke="${G}" stroke-width="3" fill="none"/><path d="M4 104 H146" stroke="${M}"/></svg>`,
+ departure:`<svg viewBox="0 0 150 110" aria-hidden="true"><circle cx="40" cy="76" r="22" fill="${S}"/><path d="M4 98 H146" stroke="${M}"/><path d="M20 90 L120 40 L138 34 Q146 33 140 40 L126 48 L36 96 Z" fill="${I}"/><path d="M74 66 L74 90 L84 86 L94 58 Z" fill="${I}"/><path d="M106 46 L106 32 L114 32 L120 42 Z" fill="${A}"/><path d="M14 104 H60" stroke="${G}" stroke-width="2" stroke-dasharray="8 6"/></svg>`
+};
+
+/* ---- map ---- */
+function niceDist(m){const opts=[50,100,200,250,500,1000,2000,2500,5000,10000];return opts.reduce((a,b)=>Math.abs(b-m)<Math.abs(a-m)?b:a)}
+function renderMap(day){
+  const pts=day.stops.map((s,i)=>({s,i})).filter(o=>o.s.ll&&o.s.map!==false&&!o.s.home);
+  if(!pts.length)return '';
+  const W=640,H=420,P=46;
+  // include home pin when the day's cluster is within ~12 km of it
+  const near=pts.every(o=>Math.hypot((o.s.ll[0]-HOME.ll[0])*111,(o.s.ll[1]-HOME.ll[1])*91)<12);
+  const all=near?pts.map(o=>o.s.ll).concat([HOME.ll]):pts.map(o=>o.s.ll);
+  let minLa=Math.min(...all.map(p=>p[0])),maxLa=Math.max(...all.map(p=>p[0])),minLo=Math.min(...all.map(p=>p[1])),maxLo=Math.max(...all.map(p=>p[1]));
+  const kx=Math.cos((minLa+maxLa)/2*Math.PI/180);
+  let w=Math.max((maxLo-minLo)*kx,.004),h=Math.max(maxLa-minLa,.004);
+  const sc=Math.min((W-2*P)/w,(H-2*P)/h);
+  const ox=(W-((maxLo-minLo)*kx)*sc)/2,oy=(H-(maxLa-minLa)*sc)/2;
+  const X=ll=>ox+(ll[1]-minLo)*kx*sc,Y=ll=>oy+(maxLa-ll[0])*sc;
+  // grid
+  let g='';for(let x=0;x<=W;x+=40)g+=`<line x1="${x}" y1="0" x2="${x}" y2="${H}"/>`;for(let y=0;y<=H;y+=40)g+=`<line x1="0" y1="${y}" x2="${W}" y2="${y}"/>`;
+  // route segments in visit order (home at start/end when near)
+  const seq=[];
+  if(near)seq.push({ll:HOME.ll,home:true});
+  day.stops.forEach(s=>{if(s.ll&&s.map!==false){ if(s.home){ if(near)seq.push({ll:HOME.ll,home:true,m:s.m,l:s.l}); } else seq.push({ll:s.ll,m:s.m,l:s.l}); }});
+  let segs='';
+  for(let k=1;k<seq.length;k++){
+    const a=seq[k-1],b=seq[k];if(a.ll===b.ll)continue;
+    const m=b.m||'walk';
+    const col=(m==='walk')?'var(--route)':`var(${(LINES[(b.l||[])[0]]||['','--route'])[1]})`;
+    const dash=m==='walk'?'5 6':m==='taxi'?'2 5':'none';
+    const wdt=m==='walk'?2:4;
+    segs+=`<line x1="${X(a.ll).toFixed(1)}" y1="${Y(a.ll).toFixed(1)}" x2="${X(b.ll).toFixed(1)}" y2="${Y(b.ll).toFixed(1)}" stroke="${col}" stroke-width="${wdt}" stroke-dasharray="${dash}" stroke-linecap="round" opacity="${m==='walk'?.55:.9}"/>`;
+  }
+  // pins (dedupe same coordinate by small offset)
+  const seen={};
+  let pins='';
+  pts.forEach(o=>{
+    const key=o.s.ll.join(',');let dx=0;if(seen[key]){dx=seen[key]*18;seen[key]++}else seen[key]=1;
+    const x=X(o.s.ll)+dx,y=Y(o.s.ll);
+    const lab=esc(o.s.s||o.s.n);const right=x<W-150;
+    pins+=`<g class="pin" data-i="${o.i}" tabindex="0" role="button" aria-label="Stop ${o.i+1}: ${esc(o.s.n)}"><circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="12"/><text class="n" x="${x.toFixed(1)}" y="${y.toFixed(1)}">${o.i+1}</text><text class="lbl" x="${(right?x+18:x-18).toFixed(1)}" y="${(y+4).toFixed(1)}" text-anchor="${right?'start':'end'}">${lab}</text></g>`;
+  });
+  if(near){const x=X(HOME.ll),y=Y(HOME.ll);pins=`<g class="pin home" tabindex="0" role="img" aria-label="Airbnb"><rect x="${(x-11).toFixed(1)}" y="${(y-11).toFixed(1)}" width="22" height="22" rx="5"/><text class="n" x="${x.toFixed(1)}" y="${y.toFixed(1)}">H</text><text class="lbl" x="${(x+18).toFixed(1)}" y="${(y+4).toFixed(1)}">Airbnb</text></g>`+pins}
+  // scale bar
+  const mpp=111320/sc, d=niceDist(mpp*110), px=d/mpp;
+  const sb=`<g transform="translate(${W-px-24},${H-22})"><line x1="0" y1="0" x2="${px.toFixed(1)}" y2="0" stroke="var(--ink)" stroke-width="2"/><line x1="0" y1="-4" x2="0" y2="4" stroke="var(--ink)" stroke-width="2"/><line x1="${px.toFixed(1)}" y1="-4" x2="${px.toFixed(1)}" y2="4" stroke="var(--ink)" stroke-width="2"/><text x="${(px/2).toFixed(1)}" y="-8" text-anchor="middle" font-family="IBM Plex Mono,monospace" font-size="11" fill="var(--muted)">${d>=1000?(d/1000)+' km':d+' m'}</text></g>`;
+  const north=`<g transform="translate(26,30)"><path d="M0 -14 L6 4 L0 0 L-6 4 Z" fill="var(--ink)"/><text x="0" y="18" text-anchor="middle" font-family="IBM Plex Mono,monospace" font-size="11" fill="var(--muted)">N</text></g>`;
+  const off=day.stops.filter(s=>(s.map===false||!s.ll)&&!s.home).map(s=>s.n);
+  const usedLines=[...new Set(day.stops.flatMap(s=>s.l||[]))];
+  return `<div class="mapcard"><svg viewBox="0 0 ${W} ${H}" role="group" aria-label="Route map for Day ${day.id}"><rect width="${W}" height="${H}" fill="var(--map-bg)"/><g stroke="var(--map-grid)" stroke-width="1">${g}</g>${segs}${pins}${sb}${north}</svg>
+  <div class="mapfoot"><span class="k"><svg width="26" height="6"><line x1="0" y1="3" x2="26" y2="3" stroke="var(--route)" stroke-width="2" stroke-dasharray="5 5"/></svg>walk</span>${usedLines.map(k=>`<span class="k"><svg width="26" height="6"><line x1="0" y1="3" x2="26" y2="3" stroke="var(${LINES[k][1]})" stroke-width="4" ${k==='taxi'?'stroke-dasharray="2 4"':''}/></svg>${LINES[k][0]}</span>`).join('')}</div>
+  <p class="mapnote">Route map drawn from each stop’s location, roughly to scale. Tap a pin to find the stop.${off.length?' Not on map: '+esc(off.join(' · '))+'.':''}</p></div>`;
+}
+
+/* ---- views ---- */
+function chips(l,m){
+  if(m==='walk')return '<span class="chip walk">WALK</span>';
+  return (l||[]).map(k=>`<span class="chip" style="background:var(${LINES[k][1]})">${LINES[k][0].toUpperCase()}</span>`).join('');
+}
+const WXI={
+ sun:'<svg viewBox="0 0 24 24" fill="none" stroke="var(--gold)" stroke-width="1.8"><circle cx="12" cy="12" r="4.5" fill="var(--gold)"/><path d="M12 2v2.5M12 19.5V22M2 12h2.5M19.5 12H22M4.9 4.9l1.8 1.8M17.3 17.3l1.8 1.8M4.9 19.1l1.8-1.8M17.3 6.7l1.8-1.8"/></svg>',
+ part:'<svg viewBox="0 0 24 24" fill="none" stroke-width="1.6"><circle cx="9" cy="9" r="3.5" fill="var(--gold)" stroke="var(--gold)"/><path d="M8 19h9.5a3.5 3.5 0 0 0 0-7 5 5 0 0 0-9.6 1.4A2.8 2.8 0 0 0 8 19z" fill="var(--surface)" stroke="var(--muted)"/></svg>',
+ cloud:'<svg viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="1.6"><path d="M7 18h10.5a4 4 0 0 0 0-8 6 6 0 0 0-11.3 1.6A3.3 3.3 0 0 0 7 18z" fill="var(--surface)"/></svg>',
+ rain:'<svg viewBox="0 0 24 24" fill="none" stroke-width="1.6"><path d="M7 14h10.5a4 4 0 0 0 0-8 6 6 0 0 0-11.3 1.6A3.3 3.3 0 0 0 7 14z" fill="var(--surface)" stroke="var(--muted)"/><path d="M8 17l-1 3M12 17l-1 3M16 17l-1 3" stroke="var(--l-jr)" stroke-linecap="round"/></svg>'
+};
+/* ---- illustrated day banners (drawn in code; sky follows the weather outlook) ---- */
+function skyFor(k,night){
+  if(night)return ['#1B2440','#3B3A66','#7A4E6E'];
+  return {sun:['#5DA9E9','#9CCBF0','#F6D7A7'],part:['#6FA7D8','#B3CFE6','#EFD9B8'],cloud:['#8D99A8','#B7C0CA','#D9DDE2'],rain:['#5E6B7A','#8693A1','#B2BBC4']}[k]||['#6FA7D8','#B3CFE6','#EFD9B8'];
+}
+function rainLayer(k){if(k!=='rain')return '';let r='';for(let i=0;i<70;i++){const x=(i*173)%1200,y=(i*97)%300;r+=`<line x1="${x}" y1="${y}" x2="${x-8}" y2="${y+22}"/>`}return `<g stroke="#fff" stroke-opacity=".45" stroke-width="1.5">${r}</g>`}
+function cloudsLayer(k){if(k==='sun')return '';const n=k==='part'?3:6;let c='';for(let i=0;i<n;i++){const x=80+i*210,y=40+(i%2)*30;c+=`<g fill="#fff" fill-opacity="${k==='part'?.85:.55}"><ellipse cx="${x}" cy="${y+18}" rx="70" ry="22"/><ellipse cx="${x+40}" cy="${y+6}" rx="45" ry="26"/><ellipse cx="${x-35}" cy="${y+12}" rx="34" ry="18"/></g>`}return c}
+function skyline(base,col,seed){let s='',x=0,i=0;while(x<1200){const w=40+((seed*7+i*13)%50),h=60+((seed*11+i*29)%120);s+=`<rect x="${x}" y="${base-h}" width="${w}" height="${h}" fill="${col}"/>`;x+=w+4;i++}return s}
+function windows(base,seed){let s='';for(let i=0;i<90;i++){const x=(i*37+seed*11)%1200,y=base-20-((i*53)%110);s+=`<rect x="${x}" y="${y}" width="5" height="7" fill="#FFD98A" opacity="${.4+(i%5)/10}"/>`}return s}
+function maple(cx,cy,r,col){let s='';for(let i=0;i<9;i++){const a=i/9*Math.PI*2;s+=`<circle cx="${(cx+Math.cos(a)*r*.6).toFixed(1)}" cy="${(cy+Math.sin(a)*r*.45).toFixed(1)}" r="${(r*.42).toFixed(1)}" fill="${col}"/>`}return `<rect x="${cx-4}" y="${cy}" width="8" height="${r*1.3}" fill="#4A3426"/>`+s}
+function banner(day,nolabel){
+  const w=(WX.days[day.id]||{}).k||'part',night=[1,9].includes(day.id),[a,b,c]=skyFor(w,night);
+  let art='';
+  const ground=(col,y=300)=>`<rect x="0" y="${y}" width="1200" height="${360-y}" fill="${col}"/>`;
+  switch(day.motif){
+   case 'arrival':art=skyline(300,'#141A2E',1)+windows(300,1)+ground('#0F1424')+`<g opacity=".9">${[0,1,2,3,4,5].map(i=>`<rect x="${100+i*180}" y="${310+(i%2)*8}" width="120" height="6" rx="3" fill="${['#FF5A7A','#4FD1FF','#FFC23D'][i%3]}"/>`).join('')}</g><g transform="translate(860 80) rotate(-12)"><path d="M0 18 L150 8 L170 4 Q182 3 176 10 L160 18 L6 30 Z" fill="#E8ECF4"/><path d="M70 14 L50 48 L66 46 L100 13Z" fill="#E8ECF4"/></g>`;break;
+   case 'tower':art=skyline(300,'#3A3F55',2)+`<g fill="#2A2E3F"><path d="M560 300 L585 70 L615 70 L640 300 Z"/><rect x="572" y="58" width="56" height="18"/><rect x="597" y="20" width="6" height="40"/></g><path d="M640 120 Q720 150 690 220 Q670 270 760 300" fill="none" stroke="#FFC23D" stroke-width="10" stroke-linecap="round"/>`+ground('#2B2F3D')+[0,1,2,3,4,5,6,7].map(i=>`<circle cx="${80+i*150}" cy="${240}" r="12" fill="#E2483D"/><rect x="${74+i*150}" y="${252}" width="12" height="4" fill="#2A2E3F"/>`).join('')+`<path d="M0 226 Q600 260 1200 226" stroke="#2A2E3F" fill="none"/>`;break;
+   case 'coaster':art=ground('#3E7D4F',290)+`<path d="M0 250 Q160 250 260 150 Q330 80 400 150 Q470 230 560 150" fill="none" stroke="#E2483D" stroke-width="9"/><circle cx="720" cy="170" r="80" fill="none" stroke="#E2483D" stroke-width="9"/><path d="M560 150 Q640 250 720 250 Q800 250 880 150 Q960 60 1200 230" fill="none" stroke="#E2483D" stroke-width="9"/>`+[80,180,300,460,620,820,980,1100].map(x=>`<line x1="${x}" y1="${x<560?235:200}" x2="${x}" y2="290" stroke="#2F3A44" stroke-width="5"/>`).join('')+`<g fill="#2F3A44">${[0,1,2,3,4].map(i=>`<rect x="${60+i*240}" y="255" width="70" height="35"/><path d="M${55+i*240} 255 L${95+i*240} 228 L${135+i*240} 255Z"/>`).join('')}</g>`;break;
+   case 'arcade':art=ground('#5B4636',300)+`<g>${[0,1,2,3,4,5].map(i=>`<path d="M${i*210-20} 120 Q${i*210+85} 40 ${i*210+190} 120" fill="none" stroke="#3A2E26" stroke-width="10"/><rect x="${i*210-20}" y="120" width="10" height="180" fill="#3A2E26"/>`).join('')}</g><rect x="0" y="118" width="1200" height="8" fill="#3A2E26"/>`+[0,1,2,3,4,5,6,7,8,9].map(i=>`<rect x="${20+i*120}" y="${190+(i%3)*10}" width="90" height="${110-(i%3)*10}" fill="${['#F4A261','#E76F51','#2A9D8F','#E9C46A','#8AB17D'][i%5]}" opacity=".9"/><rect x="${30+i*120}" y="${170+(i%3)*10}" width="70" height="16" fill="#FFF3D6"/>`).join('');break;
+   case 'castle':art=skyline(250,'#7E8CA0',3)+ground('#3C6E8F',290)+`<g transform="translate(460 70)"><path d="M-60 220 L-40 160 L320 160 L340 220Z" fill="#8A8F96"/><rect x="0" y="120" width="280" height="40" fill="#F2F2EE"/><path d="M-20 124 Q140 92 300 124 L300 128 L-20 128Z" fill="#2F6B5A"/><rect x="30" y="78" width="220" height="42" fill="#F2F2EE"/><path d="M10 82 Q140 52 270 82 L270 86 L10 86Z" fill="#2F6B5A"/><rect x="70" y="38" width="140" height="40" fill="#F2F2EE"/><path d="M50 42 Q140 14 230 42 L230 46 L50 46Z" fill="#2F6B5A"/><path d="M80 14 L90 6 M200 14 L190 6" stroke="#D4A23A" stroke-width="5" stroke-linecap="round"/></g>`+maple(150,230,50,'#D9643A')+maple(1060,220,60,'#E08A2E')+maple(260,250,35,'#C2452D');break;
+   case 'deer':art=ground('#6E9A4A',260)+`<g fill="#3B2F2A"><rect x="900" y="60" width="10" height="200"/>${[0,1,2,3,4].map(i=>`<path d="M${850+i*5} ${80+i*36} L${960-i*5} ${80+i*36} L${945-i*5} ${92+i*36} L${865+i*5} ${92+i*36}Z"/><rect x="${868+i*4}" y="${92+i*36}" width="${74-i*8}" height="24"/>`).join('')}</g>`+[[220,250],[420,270],[640,255]].map(([x,y])=>`<g transform="translate(${x} ${y})" fill="#B07A45"><ellipse cx="0" cy="0" rx="46" ry="20"/><rect x="-36" y="10" width="6" height="34"/><rect x="-18" y="12" width="6" height="32"/><rect x="18" y="12" width="6" height="32"/><rect x="32" y="10" width="6" height="34"/><path d="M36 -10 L56 -48 L66 -44 L52 -6Z"/><ellipse cx="64" cy="-50" rx="14" ry="9"/><g fill="#F3E6D0"><circle cx="-16" cy="-4" r="3"/><circle cx="2" cy="-8" r="3"/><circle cx="18" cy="-2" r="3"/></g></g>`).join('')+maple(90,200,60,'#D9643A')+maple(1120,190,55,'#E3A33B');break;
+   case 'bamboo':art=ground('#4D6B3A',320)+[...Array(16)].map((_,i)=>{const x=i*78+((i*31)%30),wd=18+(i%4)*5,col=['#4F8A3C','#6BA34C','#3E7432','#7DB35A'][i%4];return `<rect x="${x}" y="0" width="${wd}" height="360" fill="${col}"/>`+[70,150,230,310].map(y=>`<rect x="${x-1}" y="${y}" width="${wd+2}" height="3" fill="#2E5526"/>`).join('')}).join('')+`<g fill="#fff" opacity=".18"><path d="M300 0 L420 0 L260 360 L160 360Z"/><path d="M760 0 L840 0 L700 360 L630 360Z"/></g>`;break;
+   case 'daruma':art=ground('#5E7F3E',230)+`<path d="M0 230 Q300 170 600 210 T1200 190 L1200 360 L0 360Z" fill="#6C8E44"/><rect x="1040" y="40" width="70" height="230" fill="#CFE6F2" opacity=".9"/><rect x="1060" y="40" width="30" height="230" fill="#fff" opacity=".7"/><path d="M990 40 L1040 40 L1040 270 L990 300Z M1110 40 L1160 40 L1160 300 L1110 270Z" fill="#4B5A3A"/>`+[...Array(28)].map((_,i)=>{const x=40+(i%14)*68,y=250+Math.floor(i/14)*48;return `<ellipse cx="${x}" cy="${y}" rx="20" ry="23" fill="#D7332B"/><ellipse cx="${x}" cy="${y-3}" rx="11" ry="10" fill="#F6EBDD"/><circle cx="${x-4}" cy="${y-4}" r="2.2" fill="#222"/>`}).join('')+maple(820,150,55,'#E08A2E')+maple(940,170,45,'#C2452D');break;
+   case 'departure':art=skyline(300,'#141A2E',4)+windows(300,4)+ground('#0E1322')+[...Array(24)].map((_,i)=>`<circle cx="${i*52+20}" cy="330" r="3" fill="#FFD98A"/>`).join('')+`<g transform="translate(300 170) rotate(-18)"><path d="M0 18 L180 8 L204 4 Q218 3 211 10 L192 18 L6 30 Z" fill="#E8ECF4"/><path d="M84 14 L60 52 L78 50 L118 13Z" fill="#E8ECF4"/><path d="M8 18 L-4 -2 L10 -2 L24 16Z" fill="#E8ECF4"/></g>`+[...Array(30)].map((_,i)=>`<circle cx="${(i*131)%1200}" cy="${(i*47)%150+10}" r="1.6" fill="#fff" opacity=".8"/>`).join('');break;
+  }
+  return `<div class="banner" role="img" aria-label="Illustration for Day ${day.id}: ${esc(day.title)}"><svg viewBox="0 0 1200 360" preserveAspectRatio="xMidYMid slice"><defs><linearGradient id="sky${day.id}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${a}"/><stop offset=".6" stop-color="${b}"/><stop offset="1" stop-color="${c}"/></linearGradient></defs><rect width="1200" height="360" fill="url(#sky${day.id})"/>${night?'':(w==='sun'||w==='part'?'<circle cx="1050" cy="70" r="38" fill="#FFE08A" opacity=".95"/>':'')}${day.motif==='bamboo'?'':cloudsLayer(w)}${art}${rainLayer(w)}</svg>${nolabel?'':`<span class="bday">Day ${day.id} · ${esc(day.date)}</span>`}</div>`;
+}
+
+/* ---- what to wear (Singapore → Osaka, follows the outlook) ---- */
+const PLACE_ADJ={osaka:0,kyoto:-2,nara:-2,minoo:-3};
+const DAY_WEAR={
+ 1:{when:'Evening only',extra:['Comfy flight clothes plus a jacket in your carry-on: KIX feels cold after Singapore.','Dotonbori at night is about 14°C; wear the jacket out.']},
+ 2:{when:'Full walking day, ~15,000 steps',extra:['Most of the route is under covered arcades.','Round1 is warm inside; layers you can take off help.']},
+ 3:{when:'USJ: out 07:05, home 21:00',extra:['07:00 is the coldest point of the trip so far (~12°C): wear a warm layer you can tie round your waist later.','You stand in queues for hours: your most comfortable shoes, not new ones.','Jurassic Park soaks you: a poncho or quick-dry jacket, and no suede shoes.']},
+ 4:{when:'Shopping walk + evening',extra:['Wear something easy to take off for fitting rooms.','Leave room in your bag for shopping; a foldable tote helps.']},
+ 5:{when:'Castle, arcade, rooftop at night',extra:['The Umeda Sky rooftop is windy and colder at night: bring the warmest layer.']},
+ 6:{when:'Nara park, lots of walking',extra:['Deer nibble paper bags, maps and dangling straps: use a zipped bag and keep snacks out of sight.','Todai-ji has a gravel path; sneakers, not sandals.']},
+ 7:{when:'Kyoto day trip',extra:['Arashiyama in the shade of the bamboo is cooler than Osaka.','Kyoto evenings drop fast after sunset (~17:00).']},
+ 8:{when:'Hills, temple steps, 2.8 km riverside walk',extra:['Minoo is the coolest place on the trip, 2–3°C below Osaka.','Shoes with grip: the falls path and temple steps get slippery.']},
+ 9:{when:'Aquarium, shopping, overnight flight',extra:['Wear tomorrow’s Singapore clothes under a jacket: you land at 05:00 into 26°C.','Planes are cold overnight: hoodie and socks in your carry-on.']}
+};
+function tempsFor(day){
+  const w=WX.days[day.id]||{},adj=PLACE_ADJ[w.city]||0,nums=(w.t||'').match(/\d+/g);
+  let hi=19,lo=12;if(nums&&nums.length>=2){hi=+nums[0];lo=+nums[1]}else if(nums&&nums.length===1){hi=+nums[0];lo=hi-7}
+  return {hi:hi+adj,lo:lo+adj};
+}
+function wearFor(day){
+  const w=WX.days[day.id]||{},{hi,lo}=tempsFor(day),rain=w.k==='rain';
+  const top=hi>=22?'T-shirt, plus a light long-sleeve shirt for evening':hi>=17?'Long-sleeve top or T-shirt with a hoodie or cardigan over it':'Thermal base layer (like Uniqlo Heattech) under a sweater';
+  const outer=lo<=10?'Light down jacket, zipped up for morning and night':lo<=14?'Light jacket or packable down for morning and night':'Light jacket or windbreaker, mostly carried';
+  const bottom='Long pants or jeans'+(rain?' (quick-dry if you have them)':'');
+  const shoes=rain?'Sneakers that cope with puddles, plus spare socks':'Comfortable broken-in sneakers';
+  const bring=[rain?'Compact umbrella (¥100 shops sell them) or a hooded rain jacket':'Sunglasses and a cap, sun is low but bright',lo<=12?'Scarf or neck warmer, it helps more than you’d think':'',...(DAY_WEAR[day.id]?.extra||[])].filter(Boolean);
+  return {hi,lo,rain,top,outer,bottom,shoes,bring,when:(DAY_WEAR[day.id]||{}).when||''};
+}
+const PACK=[
+ ['Packable light down jacket','The one item most Singaporeans wish they brought. Folds into a pouch.'],
+ ['Hoodie, fleece or cardigan','Your middle layer for most days.'],
+ ['2–3 long-sleeve tops','Mix with T-shirts; layers beat one thick jumper.'],
+ ['Thermal top (Heattech or similar)','For the 07:00 USJ start and Minoo. Buy in Singapore before you fly; it’s cheaper than airport shops.'],
+ ['Long pants or jeans, 2–3 pairs','Shorts are too cold most evenings.'],
+ ['Comfortable broken-in sneakers','Expect 12,000–20,000 steps a day. Don’t bring new shoes.'],
+ ['Extra socks','Wet feet ruin a day; pack a spare pair in your day bag on rain days.'],
+ ['Compact umbrella or hooded rain jacket','Showers are in the outlook for several days.'],
+ ['Scarf or neck warmer','Small, light, and makes 12°C feel fine.'],
+ ['Lip balm and moisturiser','Autumn air is much drier than Singapore.'],
+ ['Small zipped backpack or crossbody bag','Crowds, trains and Nara’s deer.'],
+ ['Coin pouch','Japan uses lots of coins; ¥100 and ¥500 coins pile up fast.'],
+ ['Plug adapter (Japan type A, two flat pins)','Singapore’s three-pin plugs won’t fit. Voltage is 100 V; phone and laptop chargers are fine.'],
+ ['Power bank','Maps, the USJ app and photos drain batteries fast in the cold.'],
+ ['Hoodie and socks in carry-on','For the cold overnight flight home.']
+];
+const WEAR_I={
+ top:'<svg viewBox="0 0 40 40"><path d="M14 6l-8 5 3 7 4-2v18h14V16l4 2 3-7-8-5c-1 3-3.5 4.5-6 4.5S15 9 14 6z" fill="var(--accent)" opacity=".9"/></svg>',
+ outer:'<svg viewBox="0 0 40 40"><path d="M13 5l-8 6 2 22h9V12h8v21h9l2-22-8-6-3 3h-8z" fill="var(--l-jr)"/><path d="M8 14h24M8 20h24M8 26h24" stroke="#fff" stroke-opacity=".5" stroke-width="1.5"/></svg>',
+ bottom:'<svg viewBox="0 0 40 40"><path d="M11 5h18l2 30h-8l-3-20-3 20H9z" fill="var(--l-tanimachi)"/></svg>',
+ shoes:'<svg viewBox="0 0 40 40"><path d="M4 26c0-4 2-8 5-10l4 3 4-3 5 5c4 1 11 2 13 5v3H4z" fill="var(--ink)"/><path d="M4 29h31v3H4z" fill="var(--gold)"/></svg>',
+ umbrella:'<svg viewBox="0 0 40 40"><path d="M4 20a16 14 0 0 1 32 0z" fill="var(--l-jr)"/><path d="M20 20v11a3 3 0 0 1-6 0" fill="none" stroke="var(--ink)" stroke-width="2"/></svg>',
+ scarf:'<svg viewBox="0 0 40 40"><path d="M8 10c8 5 16 5 24 0l1 6c-4 3-7 4-9 4v14h-6V20c-3 0-6-1-10-4z" fill="var(--accent)" opacity=".85"/></svg>',
+ bag:'<svg viewBox="0 0 40 40"><rect x="9" y="12" width="22" height="22" rx="5" fill="var(--gold)"/><path d="M15 12a5 5 0 0 1 10 0" fill="none" stroke="var(--ink)" stroke-width="2"/></svg>',
+ plug:'<svg viewBox="0 0 40 40"><rect x="10" y="14" width="20" height="16" rx="4" fill="var(--muted)"/><path d="M16 6v8M24 6v8M20 30v6" stroke="var(--ink)" stroke-width="3"/></svg>'
+};
+const CATCOL={sight:'--l-jr',food:'--accent',cafe:'--l-sakaisuji',shop:'--l-tanimachi',fun:'--gold',transit:'--muted',home:'--ink'};
+function short(t,n=70){t=String(t||'');const i=t.indexOf('. ');let s=i>0?t.slice(0,i+1):t;if(s.length>n)s=s.slice(0,n).replace(/[\s,;·]+\S*$/,'')+'…';return s}
+function firstSentence(t){const i=String(t).indexOf('. ');return i>0?t.slice(0,i+1):t}
+function wxBlock(day){
+  const w=WX.days[day.id];if(!w)return '';const {hi,lo}=tempsFor(day);
+  return `<div class="tile wxtile"><span class="ti">${WXI[w.k]||''}</span><div><b>${hi}° / ${lo}°</b><small>${esc(w.c)}</small></div><a class="mini" href="https://www.google.com/search?q=${encodeURIComponent('weather '+({osaka:'Osaka',kyoto:'Kyoto Arashiyama',nara:'Nara',minoo:'Minoh'}[w.city]||'Osaka'))}" target="_blank" rel="noopener">Live</a></div>`;
+}
+function wearShort(day){
+  const x=wearFor(day);
+  return {x,items:[['top',x.hi>=22?'T-shirt':x.hi>=17?'Long sleeve + hoodie':'Thermal + sweater'],['outer',x.lo<=10?'Down jacket':x.lo<=14?'Light jacket':'Windbreaker'],['bottom','Long pants'],['shoes',x.rain?'Wet-proof sneakers':'Comfy sneakers']].concat(x.rain?[['umbrella','Umbrella']]:[]).concat(x.lo<=12?[['scarf','Scarf']]:[])};
+}
+function wearCard(day){
+  const {x,items}=wearShort(day),ex=(DAY_WEAR[day.id]||{}).extra||[];
+  return `<div class="box wear"><h4>Today’s outfit</h4><div class="outfit">${items.map(([k,l])=>`<div class="oi"><span>${WEAR_I[k]}</span><small>${esc(l)}</small></div>`).join('')}</div>
+   ${ex.length?`<details class="more"><summary>Why (${ex.length})</summary><ul>${ex.map(b=>`<li>${esc(b)}</li>`).join('')}</ul></details>`:''}</div>`;
+}
+function renderDay(day){
+  let prevQ=HOME.q,html='';
+  day.stops.forEach((s,i)=>{
+    const onMap=s.ll&&s.map!==false;
+    if(s.how&&s.m!=='none')html+=`<li class="stop"><div></div><div class="leg ${s.m==='walk'?'':'train'}"><div class="how"><span class="chips">${chips(s.l,s.m)}</span> ${esc(short(s.how,80))}</div></div></li>`;
+    const go=s.m!=='none'&&!(day.id===1&&i===0)?`<a class="btn primary" href="${gmDir(prevQ,s.q,travel(s.m))}" target="_blank" rel="noopener">${ICON.dir}Go</a>`:'';
+    const flags=[s.eat&&'Eat',s.shop&&'Shop',s.alt&&'Non-beef',s.bey&&'Beyblade',s.opt&&(s.optL||'Shower')].filter(Boolean);
+    const more=[s.d,s.how&&s.how.length>short(s.how,80).length?'How to get there: '+s.how:'',s.eat&&'Eat: '+s.eat,s.shop&&'Shop: '+s.shop,s.alt&&'Non-beef option: '+s.alt,s.opt&&(s.optL||'Optional')+': '+s.opt,s.bey&&'Beyblade: '+s.bey,s.addr].filter(Boolean);
+    html+=`<li class="stop" id="s${day.id}-${i}"><div class="when">${esc(s.t)}</div>
+      <article class="card" data-i="${i}">
+        <div class="cico" style="--cc:var(${CATCOL[s.c]||'--muted'})" aria-hidden="true">${ICON[s.c]||''}<b>${i+1}</b></div>
+        <div class="body">
+          <div class="ttl"><h3>${esc(s.n)}</h3>${s.cost?`<span class="cost">¥${esc(s.cost)}</span>`:''}</div>
+          ${flags.length?`<div class="flags">${flags.map(f=>`<span class="flag ${f==='Reminder'?'rem':''}">${esc(f)}</span>`).join('')}</div>`:''}
+          ${more.length?`<details class="more"><summary>Details</summary>${more.map(m=>`<p>${esc(m)}</p>`).join('')}</details>`:''}
+          <div class="actions">${go}<a class="btn icon" href="${gmPlace(s.q)}" target="_blank" rel="noopener" aria-label="Open in Maps">${ICON.pin}</a>${s.home?'':`<a class="btn icon" href="https://www.google.com/search?tbm=isch&q=${enc(s.q)}" target="_blank" rel="noopener" aria-label="Photos">${ICON.photo}</a>`}${s.fl?`<a class="btn primary" href="https://www.flightstats.com/v2/flight-tracker/${s.fl.no}?year=${s.fl.y}&month=${s.fl.m}&date=${s.fl.d}" target="_blank" rel="noopener">✈ Live gate</a><a class="btn" href="https://www.google.com/search?q=${enc(s.fl.code+' flight status')}" target="_blank" rel="noopener">Status</a>`:''}${s.usj?`<a class="btn primary" href="#usj">Ride vote</a>`:''}<button class="donebtn" type="button" data-done="${day.id}-${i}" aria-pressed="false">✓ Done</button></div>
+        </div>
+      </article></li>`;
+    prevQ=s.q;
+  });
+  const prev=day.id>1?`<a class="btn" href="#day-${day.id-1}">← Day ${day.id-1}</a>`:`<a class="btn" href="#overview">← Overview</a>`;
+  const next=day.id<9?`<a class="btn" href="#day-${day.id+1}">Day ${day.id+1} →</a>`:`<a class="btn" href="#directory">Directory →</a>`;
+  return `<div class="herowrap">${banner(day,true)}<div class="herotext"><div class="eyebrow">Day ${day.id} · ${esc(day.date)}</div><h2>${esc(day.title)}</h2></div></div>
+    <p class="lead1">${esc(short(day.lead,120))}</p>
+    <div class="tiles">${wxBlock(day)}<div class="tile"><span class="ti lg">¥</span><div><b>${esc(day.total.replace(/^≈\s*/,'≈'))}</b><small>per person</small></div></div><div class="tile"><span class="ti lg">⏱</span><div><b>${esc(day.hours||'10:30 → 22:00')}</b><small>${esc(day.who)}</small></div></div></div>
+    <div class="progress" aria-hidden="true"><i id="progbar"></i></div><div class="progtxt" id="progtxt"></div>
+    ${day.warn?`<details class="more box warn" ${day.id===9||day.id===1?'open':''}><summary>${esc(day.warn.h)}</summary><ul>${day.warn.items.map(x=>`<li>${esc(x)}</li>`).join('')}</ul></details>`:''}
+    <div class="daygrid"><div><ol class="timeline">${html}</ol>
+      ${wearCard(day)}
+      <details class="more box"><summary>Tips (${day.tips.length})</summary><ul>${day.tips.map(x=>`<li>${esc(x)}</li>`).join('')}</ul></details>
+      <div class="actions" style="margin-top:18px;justify-content:space-between">${prev}${next}</div></div>
+    <aside class="mapcol">${renderMap(day)}</aside></div>`;
+}
+function renderWear(){
+  const done=lsGet('osaka-pack',{});
+  const layer=[['top','Base','T-shirt or long sleeve'],['top','Middle','Hoodie or fleece'],['outer','Outer','Light down jacket']];
+  return `<div class="herowrap">${banner({id:9,date:'',title:'What to wear',motif:'castle'},true)}<div class="herotext"><div class="eyebrow">What to wear</div><h2>Osaka feels like Singapore aircon, all day</h2></div></div>
+   <div class="tiles"><div class="tile"><span class="ti lg">🇸🇬</span><div><b>26–32°C</b><small>Singapore</small></div></div><div class="tile"><span class="ti lg">🇯🇵</span><div><b>12–20°C</b><small>Osaka, early Nov</small></div></div><div class="tile"><span class="ti">${WEAR_I.umbrella}</span><div><b>Showers</b><small>several days</small></div></div></div>
+   <div class="sec"><h3>Dress in 3 layers</h3><div class="outfit layers">${layer.map(([k,t,l])=>`<div class="oi"><span>${WEAR_I[k]}</span><b>${t}</b><small>${l}</small></div>`).join('')}<div class="oi"><span>${WEAR_I.shoes}</span><b>Feet</b><small>Broken-in sneakers</small></div></div>
+   <p class="note">Indoors is heated: peel layers off, don’t rely on one thick coat. Neat casual is fine everywhere.</p></div>
+   <div class="sec"><h3>Day by day</h3><div class="wgrid">${DAYS.map(d=>{const {x,items}=wearShort(d);return `<a class="wcell" href="#day-${d.id}"><span class="wd">Day ${d.id}<small>${esc(d.date.slice(4))}</small></span><span class="wi">${WXI[(WX.days[d.id]||{}).k]||''}</span><b>${x.hi}° / ${x.lo}°</b><span class="wic">${items.slice(1).map(([k])=>WEAR_I[k]).join('')}</span></a>`}).join('')}</div></div>
+   <div class="sec"><h3>Pack</h3><div class="packgrid">${PACK.map(([t],i)=>`<label class="pk"><input type="checkbox" id="pk-${i}" data-pk="${i}" ${done[i]?'checked':''}><span>${esc(t)}</span></label>`).join('')}</div><p class="note">Forgot something? Uniqlo, GU and Don Quijote sell jackets, thermals and umbrellas cheaply. Ticks save on this phone.</p></div>`;
+}
+
+const CHECK=[
+ ['usj','USJ 1-Day Studio Pass for Thu 5 Nov — online only; register QR codes in the USJ app (Express Pass optional)'],
+ ['katsuo','Katsuo-ji (10 Nov): check the official site for online entry booking'],
+ ['ic','ICOCA or Suica in Apple/Google Wallet for everyone with a phone'],
+ ['pass','Passports on you daily — tax-free shopping and free castle entry for teens'],
+ ['bags','11 Nov: move all luggage into Room 202 by 15:00 (Room 203 out), leave ¥4,000 cash on its table, Room 202 out by 18:00; book the airport van']
+];
+function store(){try{return JSON.parse(localStorage.getItem('osaka-check')||'{}')}catch(e){return {}}}
+function save(o){try{localStorage.setItem('osaka-check',JSON.stringify(o))}catch(e){}}
+
+function renderOverview(){
+  const st=store();
+  return `${banner({id:5,date:'',title:'Osaka trip',motif:'castle'},true)}<section class="intro1"><h2>Osaka · Kyoto · Nara · Minoo</h2><p class="lead1">9 days, one area a day, out 10:30 and home by 22:00.</p>
+    <div class="tiles"><a class="tile" href="${gmPlace(HOME.q)}" target="_blank" rel="noopener"><span class="ti">${ICON.home}</span><div><b>Airbnb · Nippombashi</b><small>2-11-2 Nippombashi, Chuo-ku</small></div></a><div class="tile"><span class="ti lg">✈</span><div><b>3 Nov 08:25</b><small>SQ 620 · meet Changi T2 06:25</small></div></div><div class="tile"><span class="ti lg">✈</span><div><b>11 Nov 23:20</b><small>SQ 623 · 787-10 · KIX T1</small></div></div><div class="tile"><span class="ti lg">¥</span><div><b>≈ ¥7,200</b><small>per person per day</small></div></div></div></section>
+    <div class="daycards">${DAYS.map(d=>`<a class="dc2" href="#day-${d.id}">${banner(d,true)}<div class="dct"><div class="d">Day ${d.id} · ${esc(d.date)}</div><div class="t">${esc(d.title)}</div><div class="wmini"><span aria-hidden="true">${WXI[(WX.days[d.id]||{}).k]||''}</span>${tempsFor(d).hi}° / ${tempsFor(d).lo}° · ${esc(d.total)}</div></div></a>`).join('')}</div>
+    <div class="sec cols">
+      <div class="box"><h4>Book before you fly</h4><ul class="check">${CHECK.map(([k,t])=>`<li><input type="checkbox" id="ck-${k}" data-k="${k}" ${st[k]?'checked':''}><label for="ck-${k}">${esc(t)}</label></li>`).join('')}</ul></div>
+      <div class="box"><h4>Our Airbnb &amp; rooms</h4><p class="desc" style="margin:0 0 6px;font-weight:700">${esc(HOME.addr)}</p><p class="sub" style="margin:0 0 8px">${esc(HOME_JP)}</p>
+        <ul>${ROOMS.map(([r,w])=>`<li><b>Room ${r}:</b> ${esc(w)}</li>`).join('')}</ul>
+        <div class="actions"><a class="btn primary" href="${gmPlace(HOME.q)}" target="_blank" rel="noopener">${ICON.pin}Open in Maps</a><button class="btn" type="button" data-big="${esc('ここに行ってください\n'+HOME_JP)}" data-en="Please take me to this address">Show taxi driver</button><button class="btn" type="button" data-copy="${esc(HOME.addr)}">Copy address</button></div></div>
+      <div class="box"><h4>Who’s here when</h4><ul>
+        <li><b>3–5 Nov:</b> all three families (11 people)</li>
+        <li><b>6 Nov:</b> Junne’s family flies out — 7 people</li>
+        <li><b>7 Nov:</b> Calvin flies out early — 6 people</li>
+        <li><b>8–11 Nov:</b> Jaslyn + 2 kids, Dee + Andrew + son</li></ul></div>
+      <div class="box"><h4>Train lines you’ll ride</h4><div class="legend">${Object.keys(LINES).map(k=>`<span class="chip" style="background:var(${LINES[k][1]})">${LINES[k][0].toUpperCase()}</span>`).join('')}</div>
+        <ul style="margin-top:10px"><li>Osaka Metro city hops: ¥190–290; kids 6–11 half fare, under 6 free.</li><li>IC cards work on every train and bus here; only the Rapi:t seat surcharge needs a ticket (only if you take the Rapi:t on the way home instead of the van).</li><li>Fares are 2026 estimates — tap Directions on the day for live times.</li></ul></div>
+      <div class="box warn"><h4>Budget notes</h4><ul>
+        <li>USJ is the only day over the cap: the ticket alone is ¥8,900–11,800 (12+) or ¥5,700–7,500 (ages 4–11).</li>
+        <li>Savings: a 12-year-old in primary school gets USJ child price; Osaka Castle is free for junior-high age and under; Umeda Sky is ¥500 for ages 4–12.</li>
+        <li>Carry cash for Kuromon, Harukoma, Nakatanidou and temples.</li></ul></div>
+    </div>
+    <p class="foot">${esc(WX.normal)} Weather outlook updated ${esc(WX.updated)}. Sunset ~17:00, autumn colour just starting. Prices and opening hours checked October 2026; confirm on the day.</p>`;
+}
+
+let dirCat='all',dirQ='';
+function allPlaces(){
+  const out=[],seen=new Set();
+  DAYS.forEach(d=>d.stops.forEach(s=>{if(s.home)return;const k=s.n;if(seen.has(k))return;seen.add(k);out.push({...s,day:d})}));
+  return out;
+}
+function renderDirectory(){
+  const cats=['all','sight','food','cafe','shop','fun','transit'];
+  return `<section class="dayhead" style="grid-template-columns:1fr"><div><div class="eyebrow">Directory</div><h2>Every place on the trip</h2><p class="lead">Search by name or area. Directions start from the Airbnb; each card links to its day.</p></div></section>
+   <div class="dirtools"><input type="search" id="dirq" placeholder="Search: ramen, Kyoto, anime…" aria-label="Search places" value="${esc(dirQ)}">
+   ${cats.map(c=>`<button class="filt" data-c="${c}" aria-pressed="${c===dirCat}">${c==='all'?'All':CATS[c]}</button>`).join('')}</div>
+   <p class="count" id="dircount"></p><div class="dirlist" id="dirlist"></div>`;
+}
+function fillDirectory(){
+  const q=dirQ.trim().toLowerCase();
+  const list=allPlaces().filter(p=>(dirCat==='all'||p.c===dirCat)&&(!q||[p.n,p.d,p.eat,p.shop,p.alt,p.opt,p.bey?'beyblade '+p.bey:'',p.addr,p.day.title].join(' ').toLowerCase().includes(q)));
+  document.getElementById('dircount').textContent=`${list.length} place${list.length===1?'':'s'}`;
+  document.getElementById('dirlist').innerHTML=list.map(p=>`<div class="dir"><div class="dd">Day ${p.day.id} · ${esc(p.day.date)} · ${esc(p.t)}</div><h4>${esc(p.n)}</h4><div class="cat">${ICON[p.c]||''}${CATS[p.c]}</div><p>${esc(p.d||p.eat||p.shop||'')}</p>${p.addr?`<div class="addr">${esc(p.addr)}</div>`:''}
+    <div class="actions"><a class="btn primary" href="${gmDir(HOME.q,p.q,'transit')}" target="_blank" rel="noopener">${ICON.dir}From Airbnb</a><a class="btn" href="${gmPlace(p.q)}" target="_blank" rel="noopener">${ICON.pin}Maps</a><a class="btn" href="#day-${p.day.id}">Day ${p.day.id}</a></div></div>`).join('')||'<p class="count">No places match. Try a shorter word.</p>';
+}
+
+/* ---- shared helpers ---- */
+function lsGet(k,d){try{const v=localStorage.getItem(k);return v==null?d:JSON.parse(v)}catch(e){return d}}
+function lsSet(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}
+function toast(msg){const t=document.createElement('div');t.className='toast';t.textContent=msg;document.body.appendChild(t);setTimeout(()=>t.remove(),1600)}
+function copyText(txt){
+  try{navigator.clipboard.writeText(txt).then(()=>toast('Copied'),()=>toast('Press and hold to copy'))}catch(e){toast('Press and hold to copy')}
+}
+
+/* ---- done ticks per stop ---- */
+function syncDone(dayId){
+  const done=lsGet('osaka-done',{});const day=DAYS[dayId-1];let n=0;
+  view.querySelectorAll('[data-done]').forEach(b=>{const on=!!done[b.dataset.done];if(on)n++;b.setAttribute('aria-pressed',on);b.textContent=on?'✓ Done':'Mark done';b.closest('.card').classList.toggle('done',on)});
+  const tot=day.stops.length,bar=document.getElementById('progbar'),txt=document.getElementById('progtxt');
+  if(bar)bar.style.width=(n/tot*100)+'%';
+  if(txt)txt.textContent=n?`${n} of ${tot} stops done${n===tot?' — day complete!':''}`:`Tap “Mark done” on each stop as you go.`;
+}
+
+/* ---- USJ ride planner ---- */
+/* h:[alone, withCompanion] cm (0 = none); max cm; w:[morning, midday, evening] typical weekday wait in minutes (estimate, not live); d: ride + exit minutes */
+const AREAS={snw:'Super Nintendo World',hp:'Harry Potter',jp:'Jurassic Park',hw:'Hollywood',mp:'Minion Park',uw:'Universal Wonderland',am:'Amity Village'};
+const RIDES=[
+ {id:'mk',n:'Mario Kart: Koopa’s Challenge',a:'snw',t:'moderate',h:[122,107],w:[45,90,60],d:6,x:true,te:true,desc:'Ride a real Mario Kart through Bowser’s castle wearing AR goggles; throw shells to beat Team Bowser.'},
+ {id:'dk',n:'Mine-Cart Madness',a:'snw',t:'thrill',h:[122,107],w:[60,120,80],d:5,x:true,te:true,desc:'Donkey Kong Country mine-cart coaster that feels like it jumps over broken tracks. Usually the longest queue in the park.'},
+ {id:'yo',n:'Yoshi’s Adventure',a:'snw',t:'gentle',h:[122,92],w:[30,60,40],d:6,te:true,desc:'Slow ride on Yoshi’s back hunting for eggs, with great views over Super Nintendo World.'},
+ {id:'fj',n:'Harry Potter and the Forbidden Journey',a:'hp',t:'thrill',h:[122,122],w:[30,70,45],d:6,x:true,sr:true,desc:'Fly through Hogwarts with Harry on a robot-arm ride: dragons, Dementors and a Quidditch match. Can cause motion sickness.'},
+ {id:'hg',n:'Flight of the Hippogriff',a:'hp',t:'moderate',h:[122,92],w:[20,45,30],d:3,max:195,desc:'Short family coaster past Hagrid’s hut. A good first coaster.'},
+ {id:'fd',n:'The Flying Dinosaur',a:'jp',t:'thrill',h:[132,132],w:[30,80,50],d:4,max:198,x:true,sr:true,desc:'Lie face-down under the track like you’re carried by a pterosaur. The most intense ride in the park.'},
+ {id:'jr',n:'Jurassic Park – The Ride',a:'jp',t:'moderate',h:[122,107],w:[20,50,30],d:8,x:true,sr:true,desc:'Boat ride past dinosaurs ending in a 25.9 m drop. You will get wet; ponchos sold nearby.'},
+ {id:'hd',n:'Hollywood Dream – The Ride',a:'hw',t:'thrill',h:[132,132],w:[20,60,40],d:4,x:true,sr:true,desc:'Fast outdoor coaster where you pick your own music. Until 11 Jan 2027 it also runs a Frieren story version. Backdrop (backwards) version has a separate queue.'},
+ {id:'sf',n:'Space Fantasy – The Ride',a:'hw',t:'moderate',h:[122,102],w:[20,45,30],d:6,x:true,desc:'Indoor spinning coaster through space. Sometimes runs as a limited-time themed version.'},
+ {id:'mm',n:'Despicable Me Minion Mayhem',a:'mp',t:'moderate',h:[122,102],w:[25,60,40],d:6,x:true,desc:'Motion-simulator ride in Gru’s lab; you get turned into a Minion. Bumpy but not scary.'},
+ {id:'fr',n:'Minion Freeze Ray Sliders',a:'mp',t:'gentle',h:[122,92],w:[15,35,25],d:3,desc:'Spinning ice-rink ride with the Minions.'},
+ {id:'vb',n:'Villain-Con Minion Blast',a:'mp',t:'gentle',h:[122,0],w:[15,35,25],d:8,desc:'Walk-through shooting game with blasters; compare scores at the end. Great for competitive teens.'},
+ {id:'jw',n:'JAWS',a:'am',t:'gentle',h:[0,0],w:[10,30,20],d:9,x:true,desc:'Boat tour that gets ambushed by the shark. Loud and splashy; check with staff for small kids.'},
+ {id:'sn',n:'Snoopy’s Flying Ace Adventure',a:'uw',t:'gentle',h:[122,92],w:[15,35,25],d:3,desc:'Snoopy-themed flying ride in the kids’ area.'},
+ {id:'fs',n:'The Flying Snoopy',a:'uw',t:'gentle',h:[122,92],w:[10,30,20],d:3,desc:'Gentle up-and-down flyer; you control the height.'},
+ {id:'hk',n:'Hello Kitty’s Cupcake Dream',a:'uw',t:'gentle',h:[122,0],w:[10,25,15],d:3,desc:'Spinning cupcake cups. Riders must sit up on their own.'},
+ {id:'cn',n:'Detective Conan 4-D Live Show',a:'hw',t:'gentle',h:[0,0],w:[10,20,15],d:35,desc:'Live-action and 4-D mystery show (limited time). Check the app for show times.'}
+];
+const PLAN_KEY='osaka-usj-plan',ME_KEY='osaka-usj-me',VOTE_KEY='osaka-usj-votes',VOTER_KEY='osaka-usj-voter';
+const TEENS=[{n:'Joen',a:13,c:'#2F6FB0'},{n:'Enya',a:14,c:'#B0427A'},{n:'Aaden',a:14,c:'#2E8B57'},{n:'Emmett',a:12,c:'#B86E1E'}];
+const VLBL=['Skip','Maybe','Must ride'];
+const SHEET_URL='https://docs.google.com/spreadsheets/d/193LRVlufujCYqrpwvthKqIw7JnO-1Dr9vOoFbqBjXaQ/edit';
+function votes(){return lsGet(VOTE_KEY,{})}
+function voter(){return lsGet(VOTER_KEY,'')}
+function groupRank(){
+  const V=votes();
+  return RIDES.map(r=>{
+    const per=TEENS.map(t=>(V[t.n]||{})[r.id]);
+    const cast=per.filter(v=>v!==undefined),score=cast.reduce((a,b)=>a+b,0),skips=cast.filter(v=>v===0).length,musts=cast.filter(v=>v===2).length;
+    return {r,per,cast:cast.length,score,skips,musts,all:cast.length===TEENS.length&&skips===0};
+  }).filter(x=>x.cast).sort((a,b)=>(b.all-a.all)||(b.score-a.score)||(b.musts-a.musts)||(a.skips-b.skips));
+}
+function dotsFor(per){return `<span class="dots">${TEENS.map((t,i)=>{const v=per[i];return `<span class="dot ${v===undefined?'':'v'+v}" title="${t.n}: ${v===undefined?'not voted':VLBL[v]}">${t.n.slice(0,2)}</span>`}).join('')}</span>`}
+function fillVoters(){}
+function me(){return lsGet(ME_KEY,{h:'',c:false,start:'08:30'})}
+function slot(min){return min<11*60?0:min<16*60?1:2}
+function fmt(min){const h=Math.floor(min/60)%24,m=Math.round(min%60);return String(h).padStart(2,'0')+':'+String(m).padStart(2,'0')}
+function planCalc(){
+  const ids=lsGet(PLAN_KEY,[]),[sh,sm]=me().start.split(':').map(Number);
+  let t=sh*60+sm+10,prev=null;const rows=[];
+  ids.forEach(id=>{
+    if(id==='lunch'){rows.push({id,name:'Lunch break',sub:'Kinopio’s Café, Mel’s Drive-In or a snack stand',at:t,len:50});t+=50;return}
+    const r=RIDES.find(x=>x.id===id);if(!r)return;
+    const walk=prev?(prev===r.a?4:12):0;t+=walk;
+    const wait=r.w[slot(t)];rows.push({id,name:r.n,sub:`${AREAS[r.a]} · ~${wait} min wait${walk?` · ${walk} min walk`:''}`,at:t,len:wait+r.d});
+    t+=wait+r.d;prev=r.a;
+  });
+  return {rows,end:t,count:rows.filter(x=>x.id!=='lunch').length};
+}
+function hText(r){const[a]=r.h;if(!a)return 'Any height';return `${a} cm+${r.max?` · max ${r.max} cm`:''}`}
+let uView='vote';
+function renderUSJ(){
+  return `<section class="uhero"><div class="eyebrow">Day 3 · Thu 5 Nov · USJ</div><h2>Which rides are we doing?</h2>
+    <ol class="steps"><li><b>1</b> Tap your name</li><li><b>2</b> Vote on each ride</li><li><b>3</b> Check Top picks</li><li><b>4</b> Plan your route on the Map</li></ol></section>
+   <div class="seg" role="tablist" aria-label="USJ sections">${[['vote','Vote'],['results','Top picks'],['map','Map'],['plan','Day plan']].map(([k,l])=>`<button type="button" role="tab" data-useg="${k}" aria-selected="${uView===k}">${l}</button>`).join('')}</div>
+   <div id="u-body"></div>`;
+}
+function fillUSJ(){
+  document.querySelectorAll('[data-useg]').forEach(b=>b.setAttribute('aria-selected',b.dataset.useg===uView));
+  const el=document.getElementById('u-body');if(!el)return;
+  const V=votes(),cur=voter();
+  if(uView==='vote'){
+    const mine=cur?(V[cur]||{}):{},done=Object.keys(mine).length;
+    el.innerHTML=`<div class="names" role="group" aria-label="Who is voting">${TEENS.map(t=>`<button class="name" type="button" data-voter="${t.n}" aria-pressed="${cur===t.n}" style="--c:${t.c}"><span class="av">${t.n[0]}</span><span>${t.n}<small>${Object.keys(V[t.n]||{}).length}/${RIDES.length} voted</small></span></button>`).join('')}</div>
+     ${cur?`<div class="mybar"><span>Voting as <b>${esc(cur)}</b> · ${done} of ${RIDES.length} done</span><span class="progress"><i style="width:${done/RIDES.length*100}%"></i></span></div>`:`<p class="pick">Tap your name to start voting.</p>`}
+     <div class="vrides">${RIDES.map(r=>{const v=mine[r.id];return `<article class="vr ${v!==undefined?'voted':''}">
+       <div class="vtop"><h4>${esc(r.n)}</h4><span class="tag ${r.t}">${r.t==='thrill'?'Big thrill':r.t[0].toUpperCase()+r.t.slice(1)}</span></div>
+       <p>${esc(r.desc)}</p>
+       <div class="vmeta">${AREAS[r.a]} · ${hText(r)}</div>
+       <div class="vote" role="group" aria-label="Vote for ${esc(r.n)}">${[2,1,0].map(x=>`<button type="button" data-vote="${r.id}" data-v="${x}" aria-pressed="${v===x}" ${cur?'':'disabled'}>${VLBL[x]}</button>`).join('')}</div>
+       ${dotsFor(TEENS.map(t=>(V[t.n]||{})[r.id]))}</article>`}).join('')}</div>
+     ${cur&&done===RIDES.length?`<div class="donebox">All done, ${esc(cur)}! <button class="btn primary" type="button" data-useg="results">See Top picks</button></div>`:''}
+     <p class="note">Votes save on this phone. Pass it to the next person, or everyone votes on their own phone in the <a href="${SHEET_URL}" target="_blank" rel="noopener">live group sheet</a>.</p>`;
+  } else if(uView==='results'){
+    const rk=groupRank();
+    el.innerHTML=`<div class="whovoted">${TEENS.map(t=>{const n=Object.keys(V[t.n]||{}).length;return `<span class="vp" style="--c:${t.c}"><span class="av">${t.n[0]}</span>${t.n} ${n===RIDES.length?'✓':n+'/'+RIDES.length}</span>`}).join('')}</div>
+     <ol class="res tall">${rk.length?rk.map((x,i)=>`<li><span class="rk">${i+1}</span><span class="rn">${esc(x.r.n)}${x.all?'<span class="badge all">EVERYONE’S IN</span>':x.skips?'<span class="badge split">SPLIT</span>':''}<small>${x.score} pts · ${x.cast}/${TEENS.length} voted</small></span>${dotsFor(x.per)}</li>`).join(''):'<li class="empty" style="display:block">No votes yet. Go to Vote and tap your name.</li>'}</ol>
+     <div class="row" style="display:flex;gap:8px;flex-wrap:wrap;margin-top:14px"><button class="btn primary" type="button" id="u-useg">Turn top picks into our day plan</button><a class="btn" href="${SHEET_URL}" target="_blank" rel="noopener">Open live group sheet</a></div>
+     <p class="note">Must ride = 2 points, Maybe = 1, Skip = 0. EVERYONE’S IN = all four voted and nobody skipped.</p>`;
+  } else if(uView==='map'){
+    el.innerHTML=renderParkMap();
+  } else {
+    const m=me(),{rows,end,count}=planCalc(),inPlan=lsGet(PLAN_KEY,[]);
+    el.innerHTML=`<div class="plan">
+      <div class="row"><label for="u-start" class="count">Park opens</label><select id="u-start">${['08:00','08:30','09:00','09:30','10:00'].map(s=>`<option ${s===m.start?'selected':''}>${s}</option>`).join('')}</select>
+       <button class="btn" type="button" id="u-smart">Best order</button><button class="btn" type="button" id="u-lunch">+ Lunch</button><button class="btn" type="button" id="u-clear">Clear</button></div>
+      <ol class="pl" id="u-plan">${rows.length?rows.map((x,i)=>`<li><span class="tm">${fmt(x.at)}</span><span class="nm">${esc(x.name)}<small>${esc(x.sub)}</small></span><span class="ctl"><button class="ib" type="button" data-mv="${i}" data-dir="-1" aria-label="Move up">↑</button><button class="ib" type="button" data-mv="${i}" data-dir="1" aria-label="Move down">↓</button><button class="ib" type="button" data-rm="${i}" aria-label="Remove">×</button></span></li>`).join(''):'<li class="empty" style="display:block">No plan yet. Vote first, then tap “Turn top picks into our day plan” in Top picks.</li>'}</ol>
+      ${rows.length?`<div class="sum"><b>${count} ride${count===1?'':'s'}</b> · done around <b>${fmt(end)}</b>${end>20*60?' — that’s late; remove a ride or two.':''}</div>`:''}
+      <div class="row"><label for="u-addr" class="count">Add a ride</label><select id="u-addr"><option value="">Choose…</option>${RIDES.filter(r=>!inPlan.includes(r.id)).map(r=>`<option value="${r.id}">${esc(r.n)}</option>`).join('')}</select></div>
+      <p class="note">Times use typical weekday waits, not live ones. On the day, check live waits in the <a href="https://www.usj.co.jp/web/en/us" target="_blank" rel="noopener">official USJ app</a>, and book the free Super Nintendo World timed entry as soon as you’re through the gate.</p></div>`;
+  }
+}
+function smartOrder(){
+  /* big queues first while the park is quiet, grouped by area so you don't zig-zag */
+  const ids=lsGet(PLAN_KEY,[]),hasL=ids.includes('lunch');
+  const rs=ids.filter(i=>i!=='lunch').map(i=>RIDES.find(r=>r.id===i)).filter(Boolean);
+  const areaMax={};rs.forEach(r=>areaMax[r.a]=Math.max(areaMax[r.a]||0,r.w[1]));
+  rs.sort((a,b)=>areaMax[b.a]-areaMax[a.a]||b.w[1]-a.w[1]);
+  const out=rs.map(r=>r.id);lsSet(PLAN_KEY,out);
+  if(hasL){const rows=planCalc().rows;let k=rows.findIndex(x=>x.at>=11*60+45);if(k<0)k=out.length;out.splice(k,0,'lunch');}
+  lsSet(PLAN_KEY,out);fillUSJ();toast('Re-ordered: longest queues first');
+}
+
+/* ---- USJ park map: hand-drawn sketch, not to scale ---- */
+const PARK={
+ lagoon:[330,222,104,68],gate:[622,300],
+ areas:[
+  {k:'hw',n:'Hollywood',e:[535,272,80,74],c:'--l-jr'},
+  {k:'ny',n:'New York',e:[470,92,86,48]},
+  {k:'sf',n:'San Francisco',e:[312,60,70,38]},
+  {k:'jp',n:'Jurassic Park',e:[165,100,80,60],c:'--l-chuo'},
+  {k:'hp',n:'Harry Potter',e:[72,218,60,62],c:'--l-tanimachi'},
+  {k:'am',n:'Amity',e:[198,244,44,40],c:'--l-hanshin'},
+  {k:'ww',n:'WaterWorld',e:[222,322,40,26]},
+  {k:'snw',n:'Nintendo World',e:[96,388,86,60],c:'--l-midosuji'},
+  {k:'uw',n:'Wonderland',e:[300,392,70,50],c:'--l-sennichimae'},
+  {k:'mp',n:'Minion Park',e:[442,392,66,48],c:'--gold'}
+ ],
+ xy:{mk:[92,378],dk:[42,410],yo:[150,408],fj:[58,212],hg:[94,244],fd:[132,98],jr:[196,112],hd:[578,262],sf:[502,300],cn:[524,228],mm:[410,392],fr:[452,416],vb:[474,380],jw:[192,254],sn:[278,392],fs:[322,408],hk:[300,368]}
+};
+let uSel='';
+function rideVerdict(id){const g=groupRank().find(x=>x.r.id===id);if(!g)return 'none';return g.all?'all':g.score>0?'yes':'none'}
+function renderParkMap(){
+  const plan=lsGet(PLAN_KEY,[]).filter(i=>i!=='lunch'),V=votes();
+  if(!uSel)uSel=plan[0]||'';
+  const W=640,H=460;
+  const ell=([cx,cy,rx,ry],attr)=>`<ellipse cx="${cx}" cy="${cy}" rx="${rx}" ry="${ry}" ${attr}/>`;
+  let g='';
+  g+=ell([330,222,190,140],'fill="none" stroke="var(--line)" stroke-width="10" stroke-linecap="round"');
+  g+=ell(PARK.lagoon,'fill="var(--l-jr)" fill-opacity=".16" stroke="var(--l-jr)" stroke-opacity=".35"');
+  g+=`<text x="330" y="226" class="alab dim" style="font-style:italic">Lagoon</text>`;
+  PARK.areas.forEach(a=>{const col=a.c?`var(${a.c})`:'var(--muted)';g+=ell(a.e,`class="area" fill="${col}" fill-opacity="${a.c?.16:.08}" stroke="${col}" stroke-opacity="${a.c?.55:.3}"`)});
+  PARK.areas.forEach(a=>{const[cx,cy,rx,ry]=a.e;const ty=a.k==='snw'||a.k==='uw'||a.k==='mp'||a.k==='ww'?cy+ry-8:cy-ry+18;g+=`<text x="${cx}" y="${ty}" class="alab ${a.c?'':'dim'}">${a.n}</text>`});
+  const [gx,gy]=PARK.gate;
+  g+=`<g><rect x="${gx-16}" y="${gy-16}" width="32" height="32" rx="7" fill="var(--ink)"/><text x="${gx}" y="${gy+1}" text-anchor="middle" dominant-baseline="central" font-family="IBM Plex Mono,monospace" font-weight="700" font-size="12" fill="var(--paper)">IN</text><text x="${gx}" y="${gy-24}" class="alab">Gate</text></g>`;
+  // route in plan order
+  if(plan.length){const pts=[[gx-16,gy]].concat(plan.map(id=>PARK.xy[id]).filter(Boolean));g+=`<polyline points="${pts.map(p=>p.join(',')).join(' ')}" fill="none" stroke="var(--accent)" stroke-width="3" stroke-dasharray="7 6" stroke-linecap="round" stroke-linejoin="round" opacity=".85"/>`;}
+  // pins (selected last so its label sits on top)
+  const order=RIDES.map(r=>r.id).sort((a,b)=>(a===uSel)-(b===uSel));
+  order.forEach(id=>{const r=RIDES.find(x=>x.id===id),p=PARK.xy[id];if(!p)return;const k=plan.indexOf(id),right=p[0]<430;
+    const cls=k>=0?'inplan':rideVerdict(id);
+    g+=`<g class="upin ${cls} ${id===uSel?'sel':''}" data-umap="${id}" tabindex="0" role="button" aria-label="${esc(r.n)}${k>=0?', stop '+(k+1)+' in plan':''}"><circle cx="${p[0]}" cy="${p[1]}" r="${k>=0?14:11}"/>${k>=0?`<text class="n" x="${p[0]}" y="${p[1]}">${k+1}</text>`:''}<text class="lbl" x="${right?p[0]+18:p[0]-18}" y="${p[1]+5}" text-anchor="${right?'start':'end'}">${esc(r.n.replace(/ – The Ride|Harry Potter and the /g,''))}</text></g>`;});
+  const svg=`<div class="umap"><svg viewBox="0 0 ${W} ${H}" role="group" aria-label="Sketch map of Universal Studios Japan with ride pins"><rect width="${W}" height="${H}" fill="var(--map-bg)"/>${g}</svg>
+    <div class="ukey"><span><i style="border-color:var(--accent);background:var(--accent)"></i>In our plan (numbered)</span><span><i style="border-color:var(--l-bus)"></i>Everyone’s in</span><span><i style="border-color:var(--gold)"></i>Some votes</span><span><i style="border-color:var(--muted);border-style:dashed"></i>No votes yet / skipped</span></div></div>`;
+  // detail
+  const r=RIDES.find(x=>x.id===uSel);
+  let det;
+  if(r){const inP=plan.includes(r.id),per=TEENS.map(t=>(V[t.n]||{})[r.id]);
+    det=`<div class="udet"><div class="vtop"><h4>${esc(r.n)}</h4><span class="tag ${r.t}">${r.t==='thrill'?'Big thrill':r.t[0].toUpperCase()+r.t.slice(1)}</span></div>
+     <div class="vmeta">${AREAS[r.a]} · ${hText(r)}${r.sr?' · single rider':''}${r.x?' · Express Pass':''}</div>
+     <p>${esc(r.desc)}</p>
+     <div class="waits">${['Morning','Midday','Evening'].map((l,i)=>`<span>${l}</span><span class="wbar"><i style="width:${Math.min(100,r.w[i]/120*100)}%"></i></span><span>~${r.w[i]} min</span>`).join('')}</div>
+     ${dotsFor(per)}
+     <div class="actions"><button class="btn ${inP?'':'primary'}" type="button" data-add="${r.id}">${inP?'Remove from plan':'+ Add to plan'}</button><button class="btn" type="button" data-useg="plan">Open Day plan</button></div></div>`;}
+  else det=`<div class="udet"><h4>Tap a pin</h4><p>Each pin is a ride. Tap one to see its height limit, typical waits and the group’s votes, then add it to the plan. The dashed line shows the order you’ll walk.</p></div>`;
+  const route=plan.length?`<div class="udet" style="margin-top:12px"><h4>Our route</h4><ol class="route">${plan.map((id,i)=>{const x=RIDES.find(y=>y.id===id);return x?`<li><button type="button" data-umap="${id}"><b>${i+1}</b>${esc(x.n.split(/[:–]/)[0].trim())}</button></li>`:''}).join('')}</ol><div class="actions"><button class="btn" type="button" id="u-smart">Best order</button></div></div>`
+    :`<div class="udet" style="margin-top:12px"><h4>Our route</h4><p>No rides in the plan yet. Add them from the pins, or build one from Top picks.</p></div>`;
+  const list=`<div class="alist">${Object.keys(AREAS).map(a=>{const ar=PARK.areas.find(x=>x.k===a);return `<div class="box"><h4><i style="background:var(${ar.c})"></i>${AREAS[a]}</h4><ul>${RIDES.filter(x=>x.a===a).map(x=>`<li><button type="button" data-umap="${x.id}">${plan.includes(x.id)?'<b class="badge" style="margin:0;background:var(--accent);color:var(--accent-ink)">'+(plan.indexOf(x.id)+1)+'</b>':'·'} ${esc(x.n)}</button></li>`).join('')}</ul></div>`}).join('')}</div>`;
+  return `<div class="ulay"><div>${svg}<p class="note">A simplified sketch of where each area sits, not to scale. On the day, use the official map in the <a href="https://www.usj.co.jp/web/en/us" target="_blank" rel="noopener">USJ app</a>; Super Nintendo World needs a timed-entry slot from the app.</p></div><div>${det}${route}</div></div>${list}`;
+}
+
+/* ---- phrases, money, shopping list ---- */
+const PHRASES=[
+ ['免税できますか？','Menzei dekimasu ka?','Can I buy this tax-free?'],
+ ['ベイブレードはありますか？','Beiburēdo wa arimasu ka?','Do you have Beyblade?'],
+ ['これはいくらですか？','Kore wa ikura desu ka?','How much is this?'],
+ ['カードで払えますか？','Kādo de haraemasu ka?','Can I pay by card?'],
+ ['これをください。','Kore o kudasai.','I’ll take this, please.'],
+ ['牛肉は食べられません。','Gyūniku wa taberaremasen.','I can’t eat beef.'],
+ ['6人です。','Roku-nin desu.','Table for six, please.'],
+ ['お会計お願いします。','Okaikei onegaishimasu.','The bill, please.'],
+ ['お水をください。','Omizu o kudasai.','Water, please.'],
+ ['トイレはどこですか？','Toire wa doko desu ka?','Where is the toilet?'],
+ ['この電車は難波に行きますか？','Kono densha wa Namba ni ikimasu ka?','Does this train go to Namba?'],
+ ['シングルライダーはありますか？','Shinguru raidā wa arimasu ka?','Is there a single-rider line?'],
+ ['写真を撮ってもいいですか？','Shashin o totte mo ii desu ka?','May I take a photo?'],
+ ['すみません。','Sumimasen.','Excuse me / sorry.'],
+ ['ありがとうございます！','Arigatō gozaimasu!','Thank you!']
+];
+const HOME_JP='〒542-0073 大阪府大阪市中央区日本橋2-11-2';
+function renderTools(){
+  return `<section class="dayhead" style="grid-template-columns:1fr"><div><div class="eyebrow">Pocket tools</div><h2>Phrases, money and your shopping list</h2>
+    <p class="lead">Tap “Show” to put a phrase full-screen and hold your phone up to staff. Your shopping list and exchange rate stay saved on this phone.</p></div></section>
+   <div class="tools">
+    <div class="box" style="margin-top:0"><h4>Take me home (show the taxi driver)</h4>
+      <p class="sub">ここに行ってください · Please take me here</p><p class="desc" style="font-weight:700">${HOME_JP}</p>
+      <div class="actions"><button class="btn primary" type="button" data-big="${esc('ここに行ってください\n'+HOME_JP)}" data-en="Please take me to this address">Show</button><button class="btn" type="button" data-copy="${esc(HOME_JP)}">Copy address</button></div>
+      <p class="note">Emergency: police 110 · ambulance or fire 119.</p></div>
+    <div class="box" style="margin-top:0"><h4>Yen ⇄ SGD</h4>
+      <div class="conv"><label>Japanese yen (¥)<input id="cv-y" inputmode="decimal" placeholder="1000"></label><label>Singapore dollars (S$)<input id="cv-s" inputmode="decimal" placeholder="9.09"></label></div>
+      <div class="row" style="display:flex;gap:8px;align-items:center;margin-top:10px;flex-wrap:wrap"><label class="count" for="cv-r">Rate: S$1 = ¥</label><input id="cv-r" inputmode="decimal" style="width:90px;font:inherit;padding:6px 8px;border-radius:8px;border:1px solid var(--line);background:var(--paper);color:var(--ink)"></div>
+      <p class="note">Set the rate to today’s figure from your bank app. Daily budget cap: ¥11,000 ≈ S$100.</p></div>
+    <div class="box" style="margin-top:0"><h4>My shopping list</h4>
+      <form class="shop" id="sh-f"><input id="sh-i" placeholder="e.g. Beyblade X starter set" aria-label="Add an item"><button class="btn primary" type="submit">Add</button></form>
+      <ul class="shoplist" id="sh-l"></ul></div>
+    <div class="box" style="margin-top:0;grid-column:1/-1"><h4>Useful phrases</h4><ul class="phr">${PHRASES.map(([j,r,e])=>`<li><div class="jp">${esc(j)}</div><div class="b"><button class="btn primary" type="button" data-big="${esc(j)}" data-en="${esc(e)}">Show</button><button class="btn" type="button" data-copy="${esc(j)}">Copy</button></div><div class="ro">${esc(r)}</div><div class="en">${esc(e)}</div></li>`).join('')}</ul></div>
+   </div>`;
+}
+function fillTools(){
+  const rate=lsGet('osaka-rate',110);document.getElementById('cv-r').value=rate;
+  const list=lsGet('osaka-shop',[{t:'Beyblade X',g:false}]);
+  document.getElementById('sh-l').innerHTML=list.length?list.map((x,i)=>`<li class="${x.g?'got':''}"><input type="checkbox" id="sh-${i}" data-sg="${i}" ${x.g?'checked':''} style="accent-color:var(--accent);width:16px;height:16px"><span><label for="sh-${i}">${esc(x.t)}</label></span><button class="ib" type="button" data-sr="${i}" aria-label="Delete">×</button></li>`).join(''):'<li class="empty">Nothing yet. Add what you want to buy.</li>';
+}
+function showBig(jp,en){
+  const o=document.createElement('div');o.className='big';o.setAttribute('role','dialog');o.setAttribute('aria-label','Phrase shown large');
+  o.innerHTML=`<div class="jp">${esc(jp).replace(/\n/g,'<br>')}</div><div class="en">${esc(en)}</div><button class="btn primary" type="button">Close</button>`;
+  o.addEventListener('click',()=>o.remove());document.body.appendChild(o);o.querySelector('button').focus();
+}
+document.getElementById('view').addEventListener('click',e=>{
+  const d=e.target.closest('[data-done]');
+  if(d){const o=lsGet('osaka-done',{});o[d.dataset.done]=!o[d.dataset.done];lsSet('osaka-done',o);syncDone(+d.dataset.done.split('-')[0]);return}
+  const ua=e.target.closest('[data-ua]');if(ua){uArea=ua.dataset.ua;view.querySelectorAll('[data-ua]').forEach(b=>b.setAttribute('aria-pressed',b===ua));fillUSJ();return}
+  const ut=e.target.closest('[data-ut]');if(ut){uThrill=ut.dataset.ut;view.querySelectorAll('[data-ut]').forEach(b=>b.setAttribute('aria-pressed',b===ut));fillUSJ();return}
+  const um=e.target.closest('[data-umap]');if(um){uSel=um.dataset.umap;fillUSJ();if(um.tagName==='BUTTON'){const m=document.querySelector('.umap');if(m&&m.getBoundingClientRect().top<0)m.scrollIntoView({behavior:'smooth'})}return}
+  const add=e.target.closest('[data-add]');if(add){const p=lsGet(PLAN_KEY,[]),id=add.dataset.add,i=p.indexOf(id);if(i>=0)p.splice(i,1);else p.push(id);lsSet(PLAN_KEY,p);fillUSJ();toast(i>=0?'Removed from plan':'Added to plan');return}
+  const mv=e.target.closest('[data-mv]');if(mv){const p=lsGet(PLAN_KEY,[]),i=+mv.dataset.mv,j=i+(+mv.dataset.dir);if(j>=0&&j<p.length){[p[i],p[j]]=[p[j],p[i]];lsSet(PLAN_KEY,p);fillUSJ();}return}
+  const rm=e.target.closest('[data-rm]');if(rm){const p=lsGet(PLAN_KEY,[]);p.splice(+rm.dataset.rm,1);lsSet(PLAN_KEY,p);fillUSJ();return}
+  const jp=e.target.closest('[data-jump]');if(jp){e.preventDefault();document.getElementById('myplan').scrollIntoView({behavior:'smooth'});return}
+  if(e.target.closest('#u-smart')){smartOrder();return}
+  if(e.target.closest('#u-lunch')){const p=lsGet(PLAN_KEY,[]);if(!p.includes('lunch')){p.push('lunch');lsSet(PLAN_KEY,p);fillUSJ();}return}
+  if(e.target.closest('#u-clear')){lsSet(PLAN_KEY,[]);fillUSJ();toast('Plan cleared');return}
+  const sg=e.target.closest('[data-useg]');if(sg){uView=sg.dataset.useg;fillUSJ();window.scrollTo({top:0,behavior:'smooth'});return}
+  const vc=e.target.closest('[data-voter]');if(vc){lsSet(VOTER_KEY,vc.dataset.voter);fillUSJ();toast(vc.dataset.voter+' is voting');return}
+  const vb=e.target.closest('[data-vote]');if(vb){const cur=voter();if(!cur)return;const V=votes();V[cur]=V[cur]||{};const id=vb.dataset.vote,v=+vb.dataset.v;if(V[cur][id]===v)delete V[cur][id];else V[cur][id]=v;lsSet(VOTE_KEY,V);fillUSJ();return}
+  if(e.target.closest('#u-useg')){const rk=groupRank().filter(x=>x.skips===0&&x.score>0).slice(0,8);if(!rk.length){toast('Vote first, then try again');return}uView='plan';const p=rk.map(x=>x.r.id);p.push('lunch');lsSet(PLAN_KEY,p);smartOrder();toast('Plan built from the group’s top picks');const pl=document.getElementById('u-plan');if(pl)pl.scrollIntoView({behavior:'smooth',block:'center'});return}
+  if(e.target.closest('#u-copyv')){const cur=voter();const V=votes();if(!cur||!V[cur]||!Object.keys(V[cur]).length){toast('Pick your name and vote first');return}copyText('USJ5Nov|'+cur+'|'+Object.entries(V[cur]).map(([k,v])=>k+v).join('.'));return}
+  if(e.target.closest('#u-imp')){const txt=document.getElementById('u-codes').value;const re=/USJ5Nov\|([A-Za-z]+)\|([a-z]{2}[0-2](?:\.[a-z]{2}[0-2])*)/g;let m,n=0;const V=votes();while((m=re.exec(txt))){const t=TEENS.find(x=>x.n.toLowerCase()===m[1].toLowerCase());if(!t)continue;V[t.n]={};m[2].split('.').forEach(p=>{const id=p.slice(0,2),v=+p[2];if(RIDES.some(r=>r.id===id))V[t.n][id]=v});n++}lsSet(VOTE_KEY,V);fillUSJ();toast(n?`Added votes from ${n} ${n===1?'person':'people'}`:'No vote codes found');return}
+  const big=e.target.closest('[data-big]');if(big){showBig(big.dataset.big,big.dataset.en||'');return}
+  const cp=e.target.closest('[data-copy]');if(cp){copyText(cp.dataset.copy);return}
+  const sr=e.target.closest('[data-sr]');if(sr){const l=lsGet('osaka-shop',[]);l.splice(+sr.dataset.sr,1);lsSet('osaka-shop',l);fillTools();return}
+});
+document.getElementById('view').addEventListener('input',e=>{
+  const id=e.target.id;
+  if(id==='u-h'){const m=me();m.h=e.target.value;lsSet(ME_KEY,m);fillUSJ();}
+  if(id==='cv-y'||id==='cv-s'||id==='cv-r'){
+    const r=parseFloat(document.getElementById('cv-r').value)||110;if(id==='cv-r')lsSet('osaka-rate',r);
+    const y=document.getElementById('cv-y'),s=document.getElementById('cv-s');
+    if(id==='cv-s'){const v=parseFloat(s.value);y.value=isNaN(v)?'':Math.round(v*r)}
+    else{const v=parseFloat(y.value);s.value=isNaN(v)?'':(v/r).toFixed(2)}
+  }
+});
+document.getElementById('view').addEventListener('change',e=>{
+  const id=e.target.id;
+  if(id==='u-c'){const m=me();m.c=e.target.checked;lsSet(ME_KEY,m);fillUSJ();}
+  if(id==='u-ok'){uOnlyOk=e.target.checked;fillUSJ();}
+  if(id==='u-start'){const m=me();m.start=e.target.value;lsSet(ME_KEY,m);fillUSJ();}
+  if(id==='u-addr'&&e.target.value){const p=lsGet(PLAN_KEY,[]);p.push(e.target.value);lsSet(PLAN_KEY,p);fillUSJ();toast('Added to plan');}
+  if(e.target.dataset&&e.target.dataset.pk!==undefined){const o=lsGet('osaka-pack',{});o[e.target.dataset.pk]=e.target.checked;lsSet('osaka-pack',o);}
+  if(e.target.dataset&&e.target.dataset.sg!==undefined){const l=lsGet('osaka-shop',[]),i=+e.target.dataset.sg;if(l[i]){l[i].g=e.target.checked;lsSet('osaka-shop',l);fillTools();}}
+});
+document.getElementById('view').addEventListener('submit',e=>{
+  if(e.target.id==='sh-f'){e.preventDefault();const inp=document.getElementById('sh-i'),v=inp.value.trim();if(!v)return;const l=lsGet('osaka-shop',[{t:'Beyblade X',g:false}]);l.push({t:v,g:false});lsSet('osaka-shop',l);fillTools();const n=document.getElementById('sh-i');if(n)n.focus();}
+});
+document.getElementById('view').addEventListener('keydown',e=>{const um=e.target.closest&&e.target.closest('g[data-umap]');if(um&&(e.key==='Enter'||e.key===' ')){e.preventDefault();uSel=um.dataset.umap;fillUSJ();const n=document.querySelector(`g[data-umap="${uSel}"]`);if(n)n.focus()}});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'){const b=document.querySelector('.big');if(b)b.remove()}});
+
+/* ---- router ---- */
+const tabsEl=document.getElementById('tabs'),view=document.getElementById('view');
+tabsEl.innerHTML=`<a class="tab" href="#overview" data-r="overview">Overview</a>`+DAYS.map(d=>`<a class="tab" href="#day-${d.id}" data-r="day-${d.id}">Day ${d.id}<small>${d.date.slice(4)}</small></a>`).join('')+`<a class="tab" href="#usj" data-r="usj">USJ rides</a><a class="tab" href="#wear" data-r="wear">What to wear</a><a class="tab" href="#tools" data-r="tools">Phrases & ¥</a><a class="tab" href="#directory" data-r="directory">Directory</a>`;
+function route(){
+  const h=(location.hash||'#overview').slice(1);
+  let r=h;
+  const m=/^day-([1-9])$/.exec(h);
+  if(m){view.innerHTML=renderDay(DAYS[+m[1]-1]);syncDone(+m[1]);}
+  else if(h==='directory'){view.innerHTML=renderDirectory();fillDirectory();}
+  else if(h==='usj'){view.innerHTML=renderUSJ();fillUSJ();}
+  else if(h==='tools'){view.innerHTML=renderTools();fillTools();}
+  else if(h==='wear'){view.innerHTML=renderWear();}
+  else{r='overview';view.innerHTML=renderOverview();}
+  tabsEl.querySelectorAll('.tab').forEach(t=>{const on=t.dataset.r===r;t.toggleAttribute('aria-current',on);if(on){t.setAttribute('aria-current','page');t.scrollIntoView({block:'nearest',inline:'center'})}});
+  window.scrollTo(0,0);
+}
+function setActive(i,scroll){
+  view.querySelectorAll('.card').forEach(c=>c.classList.toggle('active',+c.dataset.i===i));
+  view.querySelectorAll('.pin[data-i]').forEach(p=>p.classList.toggle('active',+p.dataset.i===i));
+  if(scroll){const c=view.querySelector(`.card[data-i="${i}"]`);if(c)c.scrollIntoView({behavior:'smooth',block:'center'});}
+}
+view.addEventListener('click',e=>{
+  const pin=e.target.closest('.pin[data-i]');if(pin){setActive(+pin.dataset.i,true);return}
+  const card=e.target.closest('.card');if(card&&!e.target.closest('a'))setActive(+card.dataset.i,false);
+  const f=e.target.closest('.filt[data-c]');if(f){dirCat=f.dataset.c;view.querySelectorAll('.filt').forEach(b=>b.setAttribute('aria-pressed',b===f));fillDirectory();}
+});
+view.addEventListener('keydown',e=>{const pin=e.target.closest('.pin[data-i]');if(pin&&(e.key==='Enter'||e.key===' ')){e.preventDefault();setActive(+pin.dataset.i,true)}});
+view.addEventListener('input',e=>{if(e.target.id==='dirq'){dirQ=e.target.value;fillDirectory();}});
+view.addEventListener('change',e=>{const k=e.target.dataset&&e.target.dataset.k;if(k){const o=store();o[k]=e.target.checked;save(o);}});
+window.addEventListener('hashchange',route);
+route();
+</script>
+</body></html>
