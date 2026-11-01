@@ -1,4 +1,4 @@
-<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
 <title>Osaka Kansai Trip Planner</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -1105,17 +1105,17 @@ svg.leaflet-image-layer.leaflet-interactive path {
 const ROOMS=[['201','Junne and family'],['202','Jaslyn and family'],['203','Dee and family']];
 const HOME={n:'Airbnb (Rooms 201–203)',addr:'2-11-2 Nippombashi, Chuo-ku, Osaka-shi, Osaka-fu 542-0073, Japan',q:'2-11-2 Nippombashi, Chuo-ku, Osaka-shi, Osaka-fu 542-0073, Japan',ll:[34.6648,135.5072]};
 /* WEATHER: outlook snapshot (refreshed by Claude; not live data). k = sun | part | cloud | rain */
-const WX={updated:'29 Oct 2026',src:'Ventusky model outlook',
+const WX={updated:'1 Nov 2026',src:'yr.no, WeatherBug & Ventusky forecasts',
  days:{
-  1:{k:'sun',c:'Clear, a few clouds',t:'~20°C',city:'osaka'},
-  2:{k:'rain',c:'Overcast, light rain',t:'~17°C',city:'osaka',tip:'Kuromon, Den Den Town and Shinsekai are mostly covered arcades, so light rain barely matters. Pack a compact umbrella.'},
-  3:{k:'rain',c:'Mixed, rain showers',t:'~18°C',city:'osaka',tip:'Showers at USJ: most queues are covered and rides keep running in light rain. Bring a poncho (cheaper from Daiso than in the park) and a plastic bag for phones.'},
-  4:{k:'rain',c:'Mixed, rain showers',t:'~21°C',city:'osaka',tip:'Shinsaibashi-suji is fully covered; for Amemura and Orange Street, duck into shops when showers pass.'},
-  5:{k:'rain',c:'Mixed, rain showers',city:'osaka',tip:'If it pours, do the castle museum indoors and keep Umeda Sky for later in the evening when showers often clear.'},
-  6:{k:'cloud',c:'Mostly cloudy',city:'nara'},
-  7:{k:'rain',c:'Mixed, rain showers',city:'kyoto',tip:'Bamboo Grove is still beautiful in drizzle and quieter. Nishiki Market and Teramachi arcades are covered.'},
-  8:{k:'part',c:'Partly cloudy',city:'minoo',tip:'The Minoo falls path can be slippery after rain; wear shoes with grip.'},
-  9:{k:'sun',c:'Clear, a few clouds',city:'osaka'}
+  1:{k:'sun',c:'Mostly sunny',t:'21° / 12°',city:'osaka'},
+  2:{k:'cloud',c:'Cloudy, rain likely this evening',t:'20° / 11°',city:'osaka'},
+  3:{k:'rain',c:'Rain, heavy at times',t:'20° / 14°',city:'osaka',tip:'Rain at USJ: most queues are covered and rides keep running in light rain. Bring a poncho (cheaper from Daiso than in the park) and a plastic bag for phones.'},
+  4:{k:'sun',c:'Mostly sunny and warm',t:'22° / 12°',city:'osaka'},
+  5:{k:'cloud',c:'Mostly cloudy, much cooler',t:'15° / 9°',city:'osaka',tip:'A sharp cool change arrives today, so pack a warm layer for the evening.'},
+  6:{k:'part',c:'Partly cloudy, cool',t:'15° / 8°',city:'nara'},
+  7:{k:'part',c:'Partly cloudy, mild',t:'17° / 13°',city:'kyoto'},
+  8:{k:'part',c:'Sun and cloud, cool',t:'15° / 12°',city:'minoo'},
+  9:{k:'part',c:'Partly cloudy',city:'osaka'}
  },
  normal:'Typical early November in Osaka: about 19°C by day, 12°C at night; Kyoto, Nara and Minoo run 1–3°C cooler.'};
 const LINES={
@@ -1141,8 +1141,8 @@ const DAYS=[
  warn:{h:'Flight SQ 620 · Tue 3 Nov',items:['Meet at 06:25 at Changi Terminal 2, Departure Hall (Level 2): two hours before departure.','Check-in: Economy Rows 5–6 · Premium Economy and Business Row 3. Counters close at 07:45.','SQ 620 · Boeing 787-10 · departs Changi T2 08:25 → arrives Kansai T1 15:30 (Japan time).','Gate: assigned on the day. Tap “Live gate” on the flight stop for the current gate and any delay.']},
  tips:['Load IC cards at the airport; they cover every train for the rest of the trip.','Save the big snack haul for MEGA Don Quijote on Day 2 — bigger store, less carrying.']},
 
-{id:2,date:'Wed 4 Nov',title:'Kuromon → Round1 → Den Den Town → Shinsekai',motif:'tower',who:'All 11 here',total:'≈ ¥7,800',hours:'10:30 → ~19:45',
- lead:'A no-train day: market brunch and games right by the Airbnb, then a steady walk south through the anime district to the Tower Slider and kushikatsu. Home early, which suits tomorrow’s 07:05 USJ start.',
+{id:2,date:'Wed 4 Nov',title:'Kuromon → Den Den Town → Shinsekai → Midosuji lights',motif:'tower',who:'All 11 here',total:'≈ ¥8,200',hours:'10:30 → ~21:15',
+ lead:'Market brunch and games by the Airbnb, a walk south through the anime district to the Tower Slider and an open dinner in Shinsekai, then the Midosuji Christmas lights to finish. Home by about 21:15 for tomorrow’s 07:05 USJ start.',
  stops:[
   {t:'10:30',n:'Kuromon Market',s:'Kuromon',c:'food',ll:[34.6654,135.5067],q:'Kuromon Ichiba Market Osaka',m:'walk',how:'Walk 3 min.',d:'Graze brunch while stalls are freshest; it gets pricier and busier after noon.',eat:'Grilled scallops, tamagoyaki, tuna and wagyu skewers (share the pricey ones), fruit cups.',cost:'2,000'},
   {t:'12:00',n:'Round1 Stadium Sennichimae',s:'Round1',c:'fun',ll:[34.6657,135.5038],q:'Round1 Stadium Sennichimae',m:'walk',how:'Walk ~5 min west from Kuromon.',d:'Bowling, arcade, purikura photo booths, karaoke. Daytime is quieter; by law under-18s can only stay until 22:00, so daytime suits the kids.',cost:'2,000'},
@@ -1152,10 +1152,12 @@ const DAYS=[
   {t:'16:00',n:'Tsutenkaku Tower Slider',s:'Tsutenkaku',c:'fun',ll:[34.6525,135.5063],q:'Tsutenkaku Tower Osaka',m:'walk',how:'Walk ~15 min south past Ebisucho into Shinsekai, or Sakaisuji Line Nippombashi → Ebisucho, 1 stop, ¥190.',d:'A 60 m slide down the outside of the tower in about 10 seconds. Riders must be 7–65 and at least 120 cm. Observation deck optional.',cost:'1,000'},
   {t:'16:45',n:'Sennariya Coffee',s:'Sennariya',c:'cafe',ll:[34.6521,135.5056],q:'Sennariya Coffee Shinsekai',m:'walk',how:'Walk 2 min.',d:'Retro kissaten known as the birthplace of Osaka’s mixed juice.',cost:'600'},
   {t:'17:15',n:'MEGA Don Quijote Shinsekai',s:'MEGA Donki',c:'shop',ll:[34.6510,135.5052],addr:'3-4-36 Ebisuhigashi, Naniwa-ku · 9:00–5:00',q:'MEGA Don Quijote Shinsekai',m:'walk',how:'Walk 4 min south.',d:'The big snack and souvenir run, tax-free with passport.'},
-  {t:'18:00',n:'Kushikatsu Daruma Shinsekai Sohonten',s:'Kushikatsu Daruma',c:'food',ll:[34.6519,135.5064],q:'Kushikatsu Daruma Shinsekai Sohonten',m:'walk',how:'Walk 4 min.',d:'The original branch. House rule: never double-dip in the shared sauce.',cost:'2,000',alt:'No need to go elsewhere: plenty of skewers are not beef — pork, chicken, prawn, fish, vegetables, cheese.'},
-  {t:'19:30',n:'Back to the Airbnb',home:true,c:'home',ll:HOME.ll,q:HOME.q,m:'train',l:['sakaisuji'],how:'Sakaisuji Line Ebisucho → Nippombashi, 1 stop, ¥190, or walk ~20 min.',d:'Free evening: rest, pack USJ bags and buy tomorrow’s konbini breakfast.',cost:'190'}
+  {t:'18:00',n:'Dinner in Shinsekai: pick on the spot',s:'Dinner',c:'food',ll:[34.6519,135.5064],q:'restaurants Shinsekai Osaka',m:'walk',how:'Walk 4 min back towards Tsutenkaku.',d:'No booking: wander the streets around Tsutenkaku and Jan Jan Yokocho and choose what looks good. Most places show picture menus or plastic food displays outside.',eat:'Easy picks nearby: ramen, gyoza, takoyaki, okonomiyaki, udon, or konbini and food-hall bites from MEGA Don Quijote.',cost:'≈2,000'},
+  {t:'19:30',n:'Midosuji Illumination',s:'Midosuji lights',c:'sight',ll:[34.6926,135.5014],q:'Midosuji Illumination Yodoyabashi Osaka',m:'train',l:['midosuji'],how:'Midosuji Line Dobutsuen-mae → Yodoyabashi, ~12 min, ¥240. Walk south from Yodoyabashi along Midosuji Boulevard under the lights to Shinsaibashi, ~2 km, about 35 min.',d:'Midosuji Boulevard’s rows of ginkgo trees are lit up as a Christmas-lights street, 17:00–22:00. Starting at Yodoyabashi and walking south means you finish near home.',cost:'240'},
+  {t:'20:40',n:'Shinsaibashi (end of the lights walk)',s:'Shinsaibashi',c:'sight',ll:[34.6751,135.5009],q:'Shinsaibashi Station Osaka',m:'walk',how:'Keep walking south along Midosuji to Shinsaibashi.',d:'End of the illumination walk. Grab a hot drink or dessert if anyone is still hungry.'},
+  {t:'21:15',n:'Back to the Airbnb',home:true,c:'home',ll:HOME.ll,q:HOME.q,m:'train',l:['sakaisuji'],how:'Walk 5 min east to Nagahoribashi → Sakaisuji Line to Nippombashi, 1 stop, ¥190. Or walk ~20 min.',d:'Lay out USJ bags and buy tomorrow’s konbini breakfast on the way in. Alarm for 06:45.',cost:'190'}
  ],
- tips:['Buy Tower Slider tickets at the counter as soon as you reach Shinsekai.','At Round1, check the daytime bowling and arcade bundles at the counter; they are often cheaper than paying per game.','Adults can browse Kuromon’s kitchenware and snack shops while teens shop Den Den Town.']},
+ tips:['Midosuji Illumination runs early November to late December, 17:00–22:00, but the 2026 start date isn’t confirmed yet. If the lights aren’t on by 4 Nov, swap the walk for Dotonbori at night instead.','Buy Tower Slider tickets at the counter as soon as you reach Shinsekai.','At Round1, check the daytime bowling and arcade bundles at the counter; they are often cheaper than paying per game.','Adults can browse Kuromon’s kitchenware and snack shops while teens shop Den Den Town.']},
 
 {id:3,date:'Thu 5 Nov',title:'Universal Studios Japan',motif:'coaster',who:'All 11 · last full day with Junne’s family',total:'≈ ¥5,200 + ticket',hours:'07:10 → 21:30',
  lead:'An early start so everyone is at the USJ gate by 08:00 and in the first wave when it opens — the best way to get more rides and an early Super Nintendo World slot. The ticket is the trip’s one big spend, so buy it before you fly.',
@@ -1921,4 +1923,5 @@ window.addEventListener('popstate',route);
 route();
 liveWeather();
 </script>
+
 </body></html>
